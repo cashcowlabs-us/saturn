@@ -5,3 +5,5 @@ Database Matcher:
    - Selects the most appropriate websites for content placement.
    - Implemented using an ORM like Sequelize or Mongoose for database interactions.
 */
+
+throw new Error("Not implemented");
