@@ -1,0 +1,16 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "service:api": "tsc && node dist/service/api.js"
+  },
+  "keywords": [],
+  "author": "agniva",
+  "license": "ISC",
+  "dependencies": {
+    "@types/express": "^4.17.21",
+    "express": "^4.19.2",
+    "typescript": "^5.5.4"
+  }
+}
