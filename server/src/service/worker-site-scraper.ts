@@ -8,5 +8,5 @@ new Worker("site-scraper", async (job) => {
     removeOnFail: {
         count: 3
     },
-    concurrency: 50
+    concurrency: 10
 })

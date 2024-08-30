@@ -10,7 +10,7 @@ const Output = z.object({
         dr_30_60: z.string(),
         dr_60_100: z.string(),
         industry: z.string()
-    }))
+    })).min(1)
 })
 
 export default function csvInputValidation(input: any): Error | z.infer<typeof Output> {
