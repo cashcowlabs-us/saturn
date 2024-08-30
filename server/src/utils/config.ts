@@ -12,6 +12,7 @@ const config = {
   matchSiteURL: process.env["MATCH_SITE_SERVICE_URL"] ?? "",
   scrapeSiteURL: process.env["SCRAPE_SITE_SERVICE_URL"] ?? "",
   generateContentURL: process.env["GENERATE_CONTENT_SERVICE_URL"] ?? "",
+  openaiKey: process.env["OPENAI_KEY"] ?? ""
 }
 
 export default config

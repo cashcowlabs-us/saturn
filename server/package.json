@@ -4,8 +4,7 @@
   "description": "",
   "scripts": {
     "service:main": "tsc && node dist/service/api.js",
-    "service:worker:site-scraper": "tsc && node dist/service/worker-site-scraper.js",
-    "service:worker:blog-generation": "tsc && node dist/service/worker-blog-generation.js",
+    "service:worker": "tsc && node dist/service/worker.js",
     "fetch:type": "pnpx supabase gen types --lang=typescript --project-id \"rutnybcdiickiyjpidbf\" --schema public > ./src/database.types.ts",
     "test": "jest --detectOpenHandles"
   },

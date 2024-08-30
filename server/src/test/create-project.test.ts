@@ -1,6 +1,5 @@
 import request from 'supertest';
 import express from 'express';
-import { createClient } from '@supabase/supabase-js';
 import { randomUUID } from "crypto";
 import supabase from '../utils/supabase';
 

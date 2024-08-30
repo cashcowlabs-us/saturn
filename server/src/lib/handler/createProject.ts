@@ -1,3 +1,4 @@
+import { queue } from "../../utils/queue";
 import supabase from "../../utils/supabase";
 import csvInputValidation from "../csvFileValidation";
 import { randomUUID } from "crypto";
@@ -21,14 +22,18 @@ export default async function createProjectHandler(req: Request, res: Response) 
         const { error: newProjectError } = await supabase
             .from("project")
             .insert({
-                createdat: new Date().toISOString(), // Use ISO string for timestamps
+                createdat: new Date().toISOString(),
                 name: newProjectData.name,
                 id: newProjectData.uuid,
-                status: "initialization",
+                message: "creating project",
             });
+        
+        for(const backlink of result.data) {
+            queue.add("createBacklink", { project_uuid: newProjectData.uuid, ...backlink });
+        }
 
         if (newProjectError) {
-            console.error("Error creating project:", newProjectError);
+            console.error("ERR001: Error creating project:", newProjectError);
             return res.status(500).json({ error: "Failed to create project" });
         }
 
@@ -36,7 +41,7 @@ export default async function createProjectHandler(req: Request, res: Response) 
             uuid: newProjectData.uuid,
         });
     } catch (error) {
-        console.error("Unexpected error:", error);
+        console.error("ERR002: Unexpected error:", error);
         return res.status(500).json({ error: "An unexpected error occurred" });
     }
 }

@@ -16,15 +16,21 @@ export type Database = {
           dr_30_60: number
           dr_60_100: number
           id: string
+          industry: string
+          primary_keyword: string
           project_uuid: string
+          seconday_keyword: string
         }
         Insert: {
           backlink: string
           dr_0_30: number
           dr_30_60: number
           dr_60_100: number
-          id?: string
+          id: string
+          industry: string
+          primary_keyword: string
           project_uuid: string
+          seconday_keyword: string
         }
         Update: {
           backlink?: string
@@ -32,7 +38,10 @@ export type Database = {
           dr_30_60?: number
           dr_60_100?: number
           id?: string
+          industry?: string
+          primary_keyword?: string
           project_uuid?: string
+          seconday_keyword?: string
         }
         Relationships: [
           {
@@ -46,21 +55,21 @@ export type Database = {
       }
       blogs: {
         Row: {
-          blog_uuid: string
           content: string
           created_at: string | null
+          id: string
           title: string
         }
         Insert: {
-          blog_uuid?: string
           content: string
           created_at?: string | null
+          id?: string
           title: string
         }
         Update: {
-          blog_uuid?: string
           content?: string
           created_at?: string | null
+          id?: string
           title?: string
         }
         Relationships: []
@@ -69,20 +78,20 @@ export type Database = {
         Row: {
           createdat: string
           id: string
+          message: string
           name: string
-          status: string | null
         }
         Insert: {
           createdat: string
           id?: string
+          message: string
           name: string
-          status?: string | null
         }
         Update: {
           createdat?: string
           id?: string
+          message?: string
           name?: string
-          status?: string | null
         }
         Relationships: []
       }
@@ -90,21 +99,21 @@ export type Database = {
         Row: {
           backlink_uuid: string
           blog_uuid: string | null
-          id: number
+          id: string
           project_uuid: string
           site_uuid: string
         }
         Insert: {
           backlink_uuid: string
           blog_uuid?: string | null
-          id?: never
+          id: string
           project_uuid: string
           site_uuid: string
         }
         Update: {
           backlink_uuid?: string
           blog_uuid?: string | null
-          id?: never
+          id?: string
           project_uuid?: string
           site_uuid?: string
         }
@@ -121,7 +130,7 @@ export type Database = {
             columns: ["blog_uuid"]
             isOneToOne: false
             referencedRelation: "blogs"
-            referencedColumns: ["blog_uuid"]
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "project_dr_0_30_project_uuid_fkey"
@@ -143,21 +152,21 @@ export type Database = {
         Row: {
           backlink_uuid: string
           blog_uuid: string | null
-          id: number
+          id: string
           project_uuid: string
           site_uuid: string
         }
         Insert: {
           backlink_uuid: string
           blog_uuid?: string | null
-          id?: never
+          id: string
           project_uuid: string
           site_uuid: string
         }
         Update: {
           backlink_uuid?: string
           blog_uuid?: string | null
-          id?: never
+          id?: string
           project_uuid?: string
           site_uuid?: string
         }
@@ -174,7 +183,7 @@ export type Database = {
             columns: ["blog_uuid"]
             isOneToOne: false
             referencedRelation: "blogs"
-            referencedColumns: ["blog_uuid"]
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "project_dr_30_60_project_uuid_fkey"
@@ -194,30 +203,30 @@ export type Database = {
       }
       project_dr_60_100: {
         Row: {
-          backlink_url: string
+          backlink_uuid: string
           blog_uuid: string | null
-          id: number
+          id: string
           project_uuid: string
           site_uuid: string
         }
         Insert: {
-          backlink_url: string
+          backlink_uuid: string
           blog_uuid?: string | null
-          id?: never
+          id: string
           project_uuid: string
           site_uuid: string
         }
         Update: {
-          backlink_url?: string
+          backlink_uuid?: string
           blog_uuid?: string | null
-          id?: never
+          id?: string
           project_uuid?: string
           site_uuid?: string
         }
         Relationships: [
           {
-            foreignKeyName: "project_dr_60_100_backlink_url_fkey"
-            columns: ["backlink_url"]
+            foreignKeyName: "project_dr_60_100_backlink_uuid_fkey"
+            columns: ["backlink_uuid"]
             isOneToOne: false
             referencedRelation: "backlink"
             referencedColumns: ["id"]
@@ -227,7 +236,7 @@ export type Database = {
             columns: ["blog_uuid"]
             isOneToOne: false
             referencedRelation: "blogs"
-            referencedColumns: ["blog_uuid"]
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "project_dr_60_100_project_uuid_fkey"
@@ -251,7 +260,7 @@ export type Database = {
           id: string
           industry: string
           password: string
-          site: string
+          url: string
           username: string
         }
         Insert: {
@@ -259,7 +268,7 @@ export type Database = {
           id?: string
           industry: string
           password: string
-          site: string
+          url: string
           username: string
         }
         Update: {
@@ -267,7 +276,7 @@ export type Database = {
           id?: string
           industry?: string
           password?: string
-          site?: string
+          url?: string
           username?: string
         }
         Relationships: []
