@@ -14,7 +14,7 @@ import {
   RiRocketLine, 
   RiLightbulbFlashLine, 
   RiSearchEyeLine, 
-  RiBarChartBoxLine, 
+  RiBarChartBoxLine,
   RiTrophyLine, 
   RiToolsLine, 
   RiLineChartLine, 

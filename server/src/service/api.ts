@@ -89,6 +89,18 @@ app.post('/keys', async (req, res) => {
   }
 });
 
+app.get("/keys", async (req, res) => {
+  try {
+    logger.info("Received request to get API keys");
+    const keys = await supabase.from("api_keys").select("*");
+    logger.info("API keys retrieved successfully");
+    res.status(200).json({ message: 'API keys retrieved successfully', data: keys });
+  } catch (error: any) {
+    logger.error("Error in /keys GET route:", { error: error.message });
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+})
+
 app.delete('/keys', async (req, res) => {
   try {
     logger.info("Received request to delete API key", { requestBody: req.body });
