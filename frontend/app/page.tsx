@@ -4,13 +4,16 @@ import React, { useState, ChangeEvent, useEffect } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import Papa from "papaparse";
 import { useRouter } from "next/navigation";
-import { FiUpload, FiList, FiPlus, FiCheck, FiAlertTriangle } from "react-icons/fi";
+import { motion, AnimatePresence } from "framer-motion";
+import { FiUpload, FiList, FiPlus, FiCheck, FiAlertTriangle, FiClock, FiFileText } from "react-icons/fi";
+import { RiRocketLine, RiLightbulbFlashLine } from "react-icons/ri";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Label } from "@/components/ui/label";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Skeleton } from "@/components/ui/skeleton";
 import config from "@/lib/config";
 
 interface CSVRow {
@@ -31,7 +34,25 @@ interface Project {
 }
 
 const WavingHand: React.FC = () => (
-  <span className="waving-hand text-4xl inline-block">👋</span>
+  <motion.span
+    className="text-4xl inline-block"
+    animate={{ rotate: [0, 14, -8, 14, 0] }}
+    transition={{ duration: 2.5, repeat: Infinity, repeatDelay: 1 }}
+  >
+    👋
+  </motion.span>
+);
+
+const SkeletonProject: React.FC = () => (
+  <Card className="cursor-pointer hover:shadow-md transition-shadow">
+    <CardHeader>
+      <Skeleton className="h-6 w-3/4" />
+    </CardHeader>
+    <CardContent>
+      <Skeleton className="h-4 w-1/2 mb-2" />
+      <Skeleton className="h-4 w-full" />
+    </CardContent>
+  </Card>
 );
 
 export default function Home() {
@@ -52,6 +73,9 @@ export default function Home() {
       });
       if (!response.ok) throw new Error("Network response was not ok");
       return response.json();
+    },
+    onSuccess: () => {
+      refetch();
     },
   });
 
@@ -95,7 +119,12 @@ export default function Home() {
 
   return (
     <main className="flex min-h-screen bg-gray-100">
-      <div className="flex-1 p-8">
+      <motion.div 
+        className="flex-1 p-8"
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.5 }}
+      >
         <Card className="w-full h-full">
           <CardHeader>
             <CardTitle className="text-2xl font-bold flex items-center">
@@ -104,41 +133,95 @@ export default function Home() {
           </CardHeader>
           <CardContent>
             <ScrollArea className="h-[calc(100vh-200px)]">
-              {isLoading && <p className="text-center">Loading projects...</p>}
-              {isError && <p className="text-center text-red-500">Failed to load projects.</p>}
-              {projects?.data && projects?.data?.length > 0 ? (
+              {isLoading ? (
                 <div className="space-y-4">
-                  {projects.data.map((project: Project) => (
-                    <Card
-                      key={project.id}
-                      onClick={() => router.push(`project/${project.id}`)}
-                      className="cursor-pointer hover:shadow-md transition-shadow"
-                    >
-                      <CardHeader>
-                        <CardTitle>{project.name}</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <p className="text-sm text-gray-600">{new Date(project.createdat).toLocaleString()}</p>
-                        <p className="text-sm mt-2">{project.message}</p>
-                      </CardContent>
-                    </Card>
+                  {[...Array(5)].map((_, index) => (
+                    <SkeletonProject key={index} />
                   ))}
                 </div>
+              ) : isError ? (
+                <Alert variant="destructive">
+                  <FiAlertTriangle className="h-4 w-4" />
+                  <AlertTitle>Error</AlertTitle>
+                  <AlertDescription>Failed to load projects.</AlertDescription>
+                </Alert>
+              ) : projects?.data && projects.data.length > 0 ? (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.5 }}
+                  className="space-y-4"
+                >
+                  {projects.data.map((project: Project) => (
+                    <motion.div
+                      key={project.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <Card
+                        onClick={() => router.push(`project/${project.id}`)}
+                        className="cursor-pointer hover:shadow-md transition-shadow"
+                      >
+                        <CardHeader>
+                          <CardTitle className="flex items-center">
+                            <RiRocketLine className="mr-2 text-blue-500" />
+                            {project.name}
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <p className="text-sm text-gray-600 flex items-center">
+                            <FiClock className="mr-1" />
+                            {new Date(project.createdat).toLocaleString()}
+                          </p>
+                          <p className="text-sm mt-2 flex items-center">
+                            <FiFileText className="mr-1" />
+                            {project.message}
+                          </p>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  ))}
+                </motion.div>
               ) : (
-                <div className="text-center p-8">
+                <motion.div
+                  className="text-center p-8"
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.5 }}
+                >
                   <WavingHand />
-                  <p className="text-xl font-semibold mb-4 mt-4">Welcome! No projects found</p>
-                  <p className="text-gray-600">Create a new project by uploading a CSV file.</p>
-                </div>
+                  <motion.p
+                    className="text-xl font-semibold mb-4 mt-4"
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.2 }}
+                  >
+                    Welcome! No projects found
+                  </motion.p>
+                  <motion.p
+                    className="text-gray-600"
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.4 }}
+                  >
+                    Create a new project by uploading a CSV file.
+                  </motion.p>
+                </motion.div>
               )}
             </ScrollArea>
           </CardContent>
         </Card>
-      </div>
+      </motion.div>
 
       <div className="w-px bg-gray-200 self-stretch mx-4" />
 
-      <div className="flex-1 p-8 flex items-center justify-center">
+      <motion.div
+        className="flex-1 p-8 flex items-center justify-center"
+        initial={{ opacity: 0, x: 20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.5 }}
+      >
         <Card className="w-full max-w-md">
           <CardHeader>
             <CardTitle className="text-2xl font-bold flex items-center justify-center">
@@ -146,7 +229,7 @@ export default function Home() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="space-y-2">
+            <motion.div className="space-y-2" initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
               <Label htmlFor="name-input">Project Name</Label>
               <Input
                 id="name-input"
@@ -155,9 +238,9 @@ export default function Home() {
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Enter project name"
               />
-            </div>
+            </motion.div>
 
-            <div className="space-y-2">
+            <motion.div className="space-y-2" initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.1 }}>
               <Label htmlFor="csv-upload">Upload CSV</Label>
               <div className="flex items-center space-x-2">
                 <Input
@@ -175,47 +258,70 @@ export default function Home() {
                   <FiPlus className="mr-2" /> Choose File
                 </Button>
               </div>
-              {fileName && (
-                <p className="text-sm text-gray-500 mt-1 truncate">
-                  Selected: {fileName}
-                </p>
+              <AnimatePresence>
+                {fileName && (
+                  <motion.p
+                    className="text-sm text-gray-500 mt-1 truncate"
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                  >
+                    Selected: {fileName}
+                  </motion.p>
+                )}
+              </AnimatePresence>
+            </motion.div>
+
+            <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2 }}>
+              <Button
+                onClick={handleSubmit}
+                disabled={csvData.length === 0 || mutation.isPending || !name}
+                className="w-full"
+              >
+                {mutation.isPending ? (
+                  <>Submitting... <FiCheck className="ml-2 animate-spin" /></>
+                ) : (
+                  <>Submit Data <FiCheck className="ml-2" /></>
+                )}
+              </Button>
+            </motion.div>
+
+            <AnimatePresence>
+              {mutation.isError && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                >
+                  <Alert variant="destructive">
+                    <FiAlertTriangle className="h-4 w-4" />
+                    <AlertTitle>Error</AlertTitle>
+                    <AlertDescription>
+                      An error occurred while submitting the data. Please try again.
+                    </AlertDescription>
+                  </Alert>
+                </motion.div>
               )}
-            </div>
 
-            <Button
-              onClick={handleSubmit}
-              disabled={csvData.length === 0 || mutation.isPending || !name}
-              className="w-full"
-            >
-              {mutation.isPending ? (
-                <>Submitting... <FiCheck className="ml-2 animate-spin" /></>
-              ) : (
-                <>Submit Data <FiCheck className="ml-2" /></>
+              {mutation.isSuccess && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                >
+                  <Alert>
+                    <FiCheck className="h-4 w-4" />
+                    <AlertTitle>Success</AlertTitle>
+                    <AlertDescription>
+                      Data has been successfully submitted!
+                    </AlertDescription>
+                  </Alert>
+                </motion.div>
               )}
-            </Button>
-
-            {mutation.isError && (
-              <Alert variant="destructive">
-                <FiAlertTriangle className="h-4 w-4" />
-                <AlertTitle>Error</AlertTitle>
-                <AlertDescription>
-                  An error occurred while submitting the data. Please try again.
-                </AlertDescription>
-              </Alert>
-            )}
-
-            {mutation.isSuccess && (
-              <Alert>
-                <FiCheck className="h-4 w-4" />
-                <AlertTitle>Success</AlertTitle>
-                <AlertDescription>
-                  Data has been successfully submitted!
-                </AlertDescription>
-              </Alert>
-            )}
+            </AnimatePresence>
           </CardContent>
         </Card>
-      </div>
+      </motion.div>
     </main>
   );
 }
