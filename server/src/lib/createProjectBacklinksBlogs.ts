@@ -26,15 +26,22 @@ export default async function createProjectBacklinksBlogs(input: z.infer<typeof 
 
         // Call the createBlogPost function
         const previousBlog = await redis.get("previousBlog");
-        const res = await contentGenerator.generateContent(previousBlog + " Create a blog post with the keyword: " + backlink.data.industry + " and the secondary keyword: " + backlink.data.seconday_keyword);
+        const prompt = `Make sure to generate no extra text. Create a blog post using the primary keyword: ${backlink.data.industry} and the secondary keyword: ${backlink.data.seconday_keyword}. The blog post should include a title and body. Return the result in JSON format with the following structure:
+        {
+          "title": "Your blog post title here",
+          "body": "Your blog post content here"
+        }`;
+
+        const res = await contentGenerator.generateContent(previousBlog + prompt);
         if (res instanceof Error) {
             return new Error(`E002: Failed to generate content: ${res.message}`);
         }
+        const resJson =  JSON.parse(res);
         await redis.set("previousBlog", res);
 
         const { error } = await supabase.from("blogs").insert({
-            content: res,
-            title: "Create a blog post with the title: " + result.site_uuid + " and the content: " + result.site_uuid,
+            content: resJson["body"],
+            title: resJson["title"],
             id: randomUUID(),
             created_at: new Date().toISOString(),
             backlink_uuid: result.backlink_uuid,
