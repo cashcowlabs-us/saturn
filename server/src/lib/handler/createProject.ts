@@ -26,7 +26,7 @@ export default async function createProjectHandler(req: Request, res: Response) 
                 message: "building",
                 name: newProjectData.name,
                 token: result.token,
-                id: randomUUID(),
+                id: newProjectData.uuid,
             });
         
         for(const backlink of result.data) {

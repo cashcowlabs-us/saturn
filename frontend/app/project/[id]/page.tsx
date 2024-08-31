@@ -9,26 +9,17 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import config from "@/lib/config";
 import { motion, AnimatePresence } from "framer-motion";
-import { FiRefreshCw, FiCalendar, FiArrowRight, FiBox } from "react-icons/fi";
-import { 
-  RiRocketLine, 
-  RiLightbulbFlashLine, 
-  RiSearchEyeLine, 
-  RiBarChartBoxLine, 
-  RiTrophyLine, 
-  RiToolsLine, 
-  RiLineChartLine, 
-  RiFlag2Line 
-} from "react-icons/ri";
+import { FiRefreshCw, FiCalendar, FiArrowRight, FiBox, FiDollarSign } from "react-icons/fi";
+import { RiRocketLine, RiLightbulbFlashLine, RiSearchEyeLine, RiBarChartBoxLine, RiTrophyLine, RiToolsLine, RiLineChartLine, RiFlag2Line } from "react-icons/ri";
 
 const projectIcons = [
-  RiRocketLine, 
-  RiLightbulbFlashLine, 
-  RiSearchEyeLine, 
-  RiBarChartBoxLine, 
-  RiTrophyLine, 
-  RiToolsLine, 
-  RiLineChartLine, 
+  RiRocketLine,
+  RiLightbulbFlashLine,
+  RiSearchEyeLine,
+  RiBarChartBoxLine,
+  RiTrophyLine,
+  RiToolsLine,
+  RiLineChartLine,
   RiFlag2Line
 ];
 
@@ -114,12 +105,12 @@ export default function Page() {
     );
   }
 
-  const project = projectQuery.data;
+  const project = projectQuery.data?.data;
   const blogs = blogsQuery.data;
 
   return (
     <div className="container mx-auto p-4 bg-gray-50 min-h-screen">
-      <motion.div 
+      <motion.div
         className="bg-white rounded-lg p-6 mb-8"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -134,13 +125,31 @@ export default function Page() {
             We spread out the generation time to maximize the possible generating scenarios. New content may appear periodically.
           </AlertDescription>
         </Alert>
-        <p className="mt-4 text-lg font-semibold text-gray-800">
-          Total Blogs Generated: {blogs?.length || 0}
-        </p>
+        <div className="mt-4 flex flex-col lg:flex-row lg:space-x-8">
+          <div className="flex items-center mb-4 lg:mb-0">
+            <FiCalendar className="text-xl mr-2 text-gray-600" />
+            <span className="font-semibold text-gray-800">
+              Created At: {new Date(project.createdat).toLocaleDateString()}
+            </span>
+          </div>
+          <div className="flex items-center mb-4 lg:mb-0">
+            <FiBox className="text-xl mr-2 text-gray-600" />
+            <span className=" font-semibold text-gray-800">
+              Project ID: {project.id}
+            </span>
+          </div>
+          <div className="flex items-center mb-4 lg:mb-0">
+            <FiBox className="text-xl mr-2 text-gray-600" />
+            <span className=" font-semibold text-gray-800">
+              Total Blogs: {blogs.data?.length || 0}
+            </span>
+          </div>
+        </div>
+
       </motion.div>
 
       <AnimatePresence>
-        <motion.div 
+        <motion.div
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -201,15 +210,12 @@ export default function Page() {
           )}
         </motion.div>
       </AnimatePresence>
-      
+
       {isGenerating && <LoadingSpinner />}
 
-      <div className="mt-8 flex justify-center">
-        <Button onClick={handleRefresh} disabled={isGenerating} className="flex items-center">
-          <FiRefreshCw className="mr-2" />
-          Refresh Projects
-        </Button>
-      </div>
+      <Button onClick={handleRefresh} className="mt-8" variant="outline">
+        Refresh Data
+      </Button>
     </div>
   );
 }
