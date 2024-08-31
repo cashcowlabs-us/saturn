@@ -36,13 +36,11 @@ export default async function createProjectBacklinksBlogs(input: z.infer<typeof 
         if (res instanceof Error) {
             return new Error(`E002: Failed to generate content: ${res.message}`);
         }
-        const resJson =  res.split("\n");
-
         await redis.set("previousBlog", res);
 
         const { error } = await supabase.from("blogs").insert({
-            content: resJson[0],
-            title: resJson[1],
+            content: res,
+            title: "",
             id: randomUUID(),
             created_at: new Date().toISOString(),
             backlink_uuid: result.backlink_uuid,
