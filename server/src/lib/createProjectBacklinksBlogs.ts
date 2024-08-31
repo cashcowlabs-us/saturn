@@ -19,10 +19,14 @@ export default async function createProjectBacklinksBlogs(input: z.infer<typeof 
     try {
         // Validate the input
         const result = Input.parse(input);
+        const backlink = await supabase.from("backlink").select("*").eq("id", result.backlink_uuid).single();
+        if (backlink.error) {
+            return new Error(`E001: Failed to get project: ${backlink.error.message}`);
+        }
 
         // Call the createBlogPost function
         const previousBlog = await redis.get("previousBlog");
-        const res = await contentGenerator.generateContent(previousBlog + " Create a blog post with the title: " + result.site_uuid + " and the content: " + result.site_uuid);
+        const res = await contentGenerator.generateContent(previousBlog + " Create a blog post with the keyword: " + backlink.data.industry + " and the secondary keyword: " + backlink.data.seconday_keyword);
         if (res instanceof Error) {
             return new Error(`E002: Failed to generate content: ${res.message}`);
         }

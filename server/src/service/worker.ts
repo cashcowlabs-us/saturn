@@ -4,6 +4,7 @@ import { queue } from "../utils/queue";
 import createProjectBacklinks from "../lib/createProjectBacklink";
 import createProjectBacklinksBlogs from "../lib/createProjectBacklinksBlogs";
 import logger from "../utils/log";
+import express from "express"
 
 new Worker(queue.name, async (job) => {
     switch (job.name) {
@@ -29,3 +30,6 @@ new Worker(queue.name, async (job) => {
     },
     concurrency: 10
 })
+
+const app  = express()
+app.listen(3000, () => {})
