@@ -30,7 +30,14 @@ export default async function createProjectBacklinksBlogs(input: z.infer<typeof 
         {
           "title": "Your blog post title here",
           "body": "Your blog post content here"
-        }`;
+        }
+        give the ouptput in this fromat
+        {
+            "title": "Your blog post title here",
+            "body": "Your blog post content here"
+        }
+            do not use markdown format in the output
+        `;
 
         const res = await contentGenerator.generateContent(previousBlog + prompt);
         console.log(res);
