@@ -19,23 +19,99 @@ export function createKeyManager(supabase: SupabaseClient<Database>) {
 
     async function addKey(key: string): Promise<void> {
         console.log(`Adding key: ${key}`);
-        
+
+        // Test the key before adding
+        const testResult = await testKey(key);
+        if (testResult instanceof Error) {
+            throw new Error(`Key test failed: ${testResult.message}`);
+        }
+
         const { error } = await supabase
             .from('api_keys')
             .insert({
                 id: randomUUID(),
-                key,
-                requests_remaining: 60,
-                tokens_remaining: 150000,
-                requests_reset_time: new Date(Date.now() + 60000).toISOString(),
-                tokens_reset_time: new Date(Date.now() + 360000).toISOString(),
-                state: true,
-                message: 'Key added successfully'
+                key: key,
+                requests_remaining: testResult.requestsRemaining,
+                requests_reset_time: testResult.requestsResetTime.toISOString(),
+                tokens_remaining: testResult.tokensRemaining,
+                tokens_reset_time: testResult.tokensResetTime.toISOString(),
+                message: testResult.message,
+                state: testResult.state
             });
-        console.log(error);
-        
+
         if (error instanceof Error) throw error;
     }
+
+
+
+    async function testKey(key: string): Promise<OpenAIKey | Error> {
+        try {
+            const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${key}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    model: "gpt-4o-mini",
+                    messages: [{ role: "user", content: "Hello" }],
+                    max_tokens: 1
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const headers = response.headers;
+            return {
+                id: '', // This will be assigned when actually adding the key
+                key: key,
+                requestsRemaining: parseInt(headers.get('x-ratelimit-remaining-requests') || '0'),
+                tokensRemaining: parseInt(headers.get('x-ratelimit-remaining-tokens') || '0'),
+                requestsResetTime: new Date(Date.now() + parseResetTime(headers.get('x-ratelimit-reset-requests') || '0s')),
+                tokensResetTime: new Date(Date.now() + parseResetTime(headers.get('x-ratelimit-reset-tokens') || '0s')),
+                state: true,
+                message: null
+            };
+        } catch (error) {
+            if (error instanceof Error) {
+                return new Error(`Key test failed: ${error.message}`);
+            }
+            return new Error("Unexpected error occurred during key test.");
+        }
+    }
+    async function refreshKeys(): Promise<void> {
+        const { data: keys, error } = await supabase
+            .from('api_keys')
+            .select('*');
+
+        if (error) throw error;
+        if (!keys || keys.length === 0) {
+            console.log("No API keys to refresh");
+            return;
+        }
+
+        for (const key of keys) {
+            const testResult = await testKey(key.key);
+            if (testResult instanceof Error) {
+                await updateKeyState(key.id, false, testResult.message);
+            } else {
+                await supabase
+                    .from('api_keys')
+                    .update({
+                        requests_remaining: testResult.requestsRemaining,
+                        tokens_remaining: testResult.tokensRemaining,
+                        requests_reset_time: testResult.requestsResetTime.toISOString(),
+                        tokens_reset_time: testResult.tokensResetTime.toISOString(),
+                        state: true,
+                        message: 'Key refreshed successfully'
+                    })
+                    .eq('id', key.id);
+            }
+        }
+    }
+
 
     async function removeKey(key: string): Promise<void> {
         const { error } = await supabase
@@ -154,10 +230,21 @@ export function createKeyManager(supabase: SupabaseClient<Database>) {
         }, new Date(Date.now() + 3600000));
     }
 
+    function calculateMaxBlogs(tokensRemaining: number, tokensPerBlog: number): number {
+        return Math.floor(tokensRemaining / tokensPerBlog);
+    }
+
+    function calculateDaysToExhaustTokens(tokensRemaining: number, tokensPerDay: number): number {
+        return Math.ceil(tokensRemaining / tokensPerDay);
+    }
+
     return {
         addKey,
         removeKey,
-        executeRequest
+        executeRequest,
+        refreshKeys,
+        calculateMaxBlogs,
+        calculateDaysToExhaustTokens
     };
 }
 
@@ -177,7 +264,7 @@ export function createContentGenerator(keyManager: ReturnType<typeof createKeyMa
                         max_tokens: 500
                     })
                 });
-                
+
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
@@ -186,7 +273,7 @@ export function createContentGenerator(keyManager: ReturnType<typeof createKeyMa
             if (response instanceof Error) {
                 return response;
             }
-    
+
             return response.choices[0].message.content.trim();
         } catch (error) {
             if (error instanceof Error) {
@@ -198,8 +285,33 @@ export function createContentGenerator(keyManager: ReturnType<typeof createKeyMa
         }
     }
 
+    async function getTokenUsage(): Promise<number> {
+        try {
+            const { data: keys, error } = await supabase
+                .from('api_keys')
+                .select('tokens_remaining')
+                .eq('state', true);
+
+            if (error) throw error;
+            if (!keys || keys.length === 0) return 0;
+
+            return keys.reduce((total, key) => total + key.tokens_remaining, 0);
+        } catch (error) {
+            console.error('Error retrieving token usage:', error);
+            return 0;
+        }
+    }
+
+
+    async function calculateTokenUsagePerDay(): Promise<number> {
+        const totalTokens = await getTokenUsage();
+        // Estimate based on average daily usage (example: 1000 tokens/day)
+        return totalTokens / 500; // Assume a month has 30 days
+    }
+
     return {
-        generateContent
+        generateContent,
+        calculateTokenUsagePerDay
     };
 }
 

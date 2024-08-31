@@ -134,179 +134,23 @@ export type Database = {
           id: string
           message: string
           name: string
+          token: number
         }
         Insert: {
           createdat: string
           id?: string
           message: string
           name: string
+          token: number
         }
         Update: {
           createdat?: string
           id?: string
           message?: string
           name?: string
+          token?: number
         }
         Relationships: []
-      }
-      project_dr_0_30: {
-        Row: {
-          backlink_uuid: string
-          blog_uuid: string | null
-          id: string
-          project_uuid: string
-          site_uuid: string
-        }
-        Insert: {
-          backlink_uuid: string
-          blog_uuid?: string | null
-          id: string
-          project_uuid: string
-          site_uuid: string
-        }
-        Update: {
-          backlink_uuid?: string
-          blog_uuid?: string | null
-          id?: string
-          project_uuid?: string
-          site_uuid?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "project_dr_0_30_backlink_uuid_fkey"
-            columns: ["backlink_uuid"]
-            isOneToOne: false
-            referencedRelation: "backlink"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "project_dr_0_30_blog_uuid_fkey"
-            columns: ["blog_uuid"]
-            isOneToOne: false
-            referencedRelation: "blogs"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "project_dr_0_30_project_uuid_fkey"
-            columns: ["project_uuid"]
-            isOneToOne: false
-            referencedRelation: "project"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "project_dr_0_30_site_uuid_fkey"
-            columns: ["site_uuid"]
-            isOneToOne: false
-            referencedRelation: "sites"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      project_dr_30_60: {
-        Row: {
-          backlink_uuid: string
-          blog_uuid: string | null
-          id: string
-          project_uuid: string
-          site_uuid: string
-        }
-        Insert: {
-          backlink_uuid: string
-          blog_uuid?: string | null
-          id: string
-          project_uuid: string
-          site_uuid: string
-        }
-        Update: {
-          backlink_uuid?: string
-          blog_uuid?: string | null
-          id?: string
-          project_uuid?: string
-          site_uuid?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "project_dr_30_60_backlink_uuid_fkey"
-            columns: ["backlink_uuid"]
-            isOneToOne: false
-            referencedRelation: "backlink"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "project_dr_30_60_blog_uuid_fkey"
-            columns: ["blog_uuid"]
-            isOneToOne: false
-            referencedRelation: "blogs"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "project_dr_30_60_project_uuid_fkey"
-            columns: ["project_uuid"]
-            isOneToOne: false
-            referencedRelation: "project"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "project_dr_30_60_site_uuid_fkey"
-            columns: ["site_uuid"]
-            isOneToOne: false
-            referencedRelation: "sites"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      project_dr_60_100: {
-        Row: {
-          backlink_uuid: string
-          blog_uuid: string | null
-          id: string
-          project_uuid: string
-          site_uuid: string
-        }
-        Insert: {
-          backlink_uuid: string
-          blog_uuid?: string | null
-          id: string
-          project_uuid: string
-          site_uuid: string
-        }
-        Update: {
-          backlink_uuid?: string
-          blog_uuid?: string | null
-          id?: string
-          project_uuid?: string
-          site_uuid?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "project_dr_60_100_backlink_uuid_fkey"
-            columns: ["backlink_uuid"]
-            isOneToOne: false
-            referencedRelation: "backlink"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "project_dr_60_100_blog_uuid_fkey"
-            columns: ["blog_uuid"]
-            isOneToOne: false
-            referencedRelation: "blogs"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "project_dr_60_100_project_uuid_fkey"
-            columns: ["project_uuid"]
-            isOneToOne: false
-            referencedRelation: "project"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "project_dr_60_100_site_uuid_fkey"
-            columns: ["site_uuid"]
-            isOneToOne: false
-            referencedRelation: "sites"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       sites: {
         Row: {

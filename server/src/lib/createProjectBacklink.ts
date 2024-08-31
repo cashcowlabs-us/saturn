@@ -51,11 +51,11 @@ export default async function createProjectBacklinks(input: z.infer<typeof Input
 
         for (const range of drRanges) {
             const sites = await matchSite(result.primary_keyword, result.seconday_keyword.split(","), result.industry, range.max, range.min);
-            
+
             if (sites instanceof Error) {
                 return sites;
             }
-            
+
             for (let i = 0; i < range.count; i++) {
                 const id = randomUUID();
                 const siteResult = getRandomIndex(sites);
@@ -63,17 +63,6 @@ export default async function createProjectBacklinks(input: z.infer<typeof Input
                     return siteResult;
                 }
                 const site_uuid = siteResult.site_uuid;
-                
-                const { error: insertError } = await supabase.from(range.table as any).insert({
-                    id,
-                    backlink_uuid: backlink_uuid,
-                    project_uuid: result.project_uuid,
-                    site_uuid
-                });
-
-                if (insertError) {
-                    return new Error(`Failed to insert data into ${range.table}: ${insertError.message}`);
-                }
 
                 await queue.add("createBacklinkBlog", { id, project_uuid: result.project_uuid, backlink_uuid, site_uuid, table: range.table });
             }

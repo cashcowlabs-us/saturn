@@ -23,9 +23,10 @@ export default async function createProjectHandler(req: Request, res: Response) 
             .from("project")
             .insert({
                 createdat: new Date().toISOString(),
+                message: "building",
                 name: newProjectData.name,
-                id: newProjectData.uuid,
-                message: "creating project",
+                token: result.token,
+                id: randomUUID(),
             });
         
         for(const backlink of result.data) {

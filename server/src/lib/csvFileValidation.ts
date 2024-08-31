@@ -2,6 +2,7 @@ import { z } from "zod";
 
 const Output = z.object({
     name: z.string(),
+    token: z.number(),
     data: z.array(z.object({
         backlink: z.string().url(),
         primary_keyword: z.string().url(),
@@ -9,7 +10,7 @@ const Output = z.object({
         dr_0_30: z.string(),
         dr_30_60: z.string(),
         dr_60_100: z.string(),
-        industry: z.string()
+        industry: z.string(),
     })).min(1)
 })
 

@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { FiList, FiSettings, FiUpload, FiX } from "react-icons/fi";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import InfoSection from "@/components/SystemInfo"
 import ProjectList from "@/components/ProjectList";
 import FileUploadSection, { CSVRow, WebsiteRow } from "@/components/FileUploadSection";
 import ApiKeySection from "@/components/ApiKeySection";
@@ -28,24 +28,6 @@ export default function Home() {
 
   return (
     <main className="flex flex-col min-h-screen bg-gray-100">
-      {showInfo && (
-        <div className="w-full h-full">
-          <Alert className="m-5">
-            <AlertTitle className="text-xl font-bold flex items-center justify-between">
-              Info
-              <FiX
-                className="cursor-pointer"
-                onClick={() => setShowInfo(false)}
-                aria-label="Close info"
-              />
-            </AlertTitle>
-            <AlertDescription>
-              Welcome to the dashboard. Here you can manage your projects, upload CSV files, and configure API keys.
-            </AlertDescription>
-          </Alert>
-        </div>
-      )}
-      
       <motion.div
         className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-4 p-4 lg:p-8"
         initial={{ opacity: 0 }}
@@ -90,6 +72,7 @@ export default function Home() {
               </CardTitle>
             </CardHeader>
             <CardContent>
+              <InfoSection />
               <ApiKeySection />
             </CardContent>
           </Card>

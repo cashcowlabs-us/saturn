@@ -14,7 +14,7 @@ import {
   RiRocketLine, 
   RiLightbulbFlashLine, 
   RiSearchEyeLine, 
-  RiBarChartBoxLine,
+  RiBarChartBoxLine, 
   RiTrophyLine, 
   RiToolsLine, 
   RiLineChartLine, 
@@ -62,12 +62,23 @@ export default function Page() {
   const params = useParams();
   const [isGenerating, setIsGenerating] = useState(false);
 
-  const { data, isLoading, error, refetch } = useQuery({
+  const projectQuery = useQuery({
     queryKey: ['projects', params.id],
     queryFn: async () => {
       const response = await fetch(`${config.backendUrl}/project/${params.id}`);
       if (!response.ok) {
-        throw new Error("Failed to fetch projects");
+        throw new Error("Failed to fetch project details");
+      }
+      return response.json();
+    },
+  });
+
+  const blogsQuery = useQuery({
+    queryKey: ['blogs', params.id],
+    queryFn: async () => {
+      const response = await fetch(`${config.backendUrl}/project/blogs/${params.id}`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch blogs");
       }
       return response.json();
     },
@@ -85,8 +96,26 @@ export default function Page() {
 
   const handleRefresh = () => {
     setIsGenerating(true);
-    refetch().then(() => setIsGenerating(false));
+    Promise.all([projectQuery.refetch(), blogsQuery.refetch()])
+      .then(() => setIsGenerating(false));
   };
+
+  if (projectQuery.isLoading || blogsQuery.isLoading) {
+    return <div className="container mx-auto p-4 bg-gray-50 min-h-screen"><ProjectSkeleton /></div>;
+  }
+
+  if (projectQuery.error || blogsQuery.error) {
+    return (
+      <div className="container mx-auto p-4 bg-gray-50 min-h-screen">
+        <Alert variant="destructive">
+          <AlertDescription>Error: {projectQuery.error?.message || blogsQuery.error?.message}</AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
+
+  const project = projectQuery.data;
+  const blogs = blogsQuery.data;
 
   return (
     <div className="container mx-auto p-4 bg-gray-50 min-h-screen">
@@ -98,13 +127,16 @@ export default function Page() {
       >
         <h1 className="text-3xl font-bold text-gray-800 flex items-center justify-center mb-4">
           <FiBox className="mr-2" />
-          Project {params.id}
+          {project.name || `Project ${params.id}`}
         </h1>
         <Alert>
           <AlertDescription>
             We spread out the generation time to maximize the possible generating scenarios. New content may appear periodically.
           </AlertDescription>
         </Alert>
+        <p className="mt-4 text-lg font-semibold text-gray-800">
+          Total Blogs Generated: {blogs?.length || 0}
+        </p>
       </motion.div>
 
       <AnimatePresence>
@@ -114,7 +146,7 @@ export default function Page() {
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5, staggerChildren: 0.1 }}
         >
-          {isLoading ? (
+          {blogs.isLoading ? (
             Array.from({ length: 6 }).map((_, index) => (
               <motion.div
                 key={index}
@@ -126,18 +158,18 @@ export default function Page() {
                 <ProjectSkeleton />
               </motion.div>
             ))
-          ) : error ? (
+          ) : blogs.error ? (
             <div className="col-span-full">
               <Alert variant="destructive">
-                <AlertDescription>Error: {error.message}</AlertDescription>
+                <AlertDescription>Error: {blogs.error.message}</AlertDescription>
               </Alert>
             </div>
           ) : (
-            data.data?.map((project: any, index: number) => {
+            blogs.data?.map((blog: any, index: number) => {
               const Icon = projectIcons[index % projectIcons.length];
               return (
                 <motion.div
-                  key={project.id}
+                  key={blog.id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -20 }}
@@ -147,16 +179,16 @@ export default function Page() {
                     <CardHeader className="bg-gradient-to-r from-blue-500 to-purple-600 text-white">
                       <h2 className="text-xl font-semibold flex items-center">
                         <Icon className="mr-2 w-6 h-6" />
-                        {project.title}
+                        {blog.title}
                       </h2>
                     </CardHeader>
                     <CardContent className="pt-4">
-                      <p className="text-gray-700">{project.content}</p>
+                      <p className="text-gray-700">{blog.content}</p>
                     </CardContent>
                     <CardFooter className="bg-gray-50 flex justify-between items-center">
                       <p className="text-sm text-gray-600 flex items-center">
                         <FiCalendar className="mr-1" />
-                        {new Date(project.created_at).toLocaleDateString()}
+                        {new Date(blog.created_at).toLocaleDateString()}
                       </p>
                       <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-800">
                         Details <FiArrowRight className="ml-1" />
@@ -173,7 +205,7 @@ export default function Page() {
       {isGenerating && <LoadingSpinner />}
 
       <div className="mt-8 flex justify-center">
-        <Button onClick={handleRefresh} disabled={isLoading || isGenerating} className="flex items-center">
+        <Button onClick={handleRefresh} disabled={isGenerating} className="flex items-center">
           <FiRefreshCw className="mr-2" />
           Refresh Projects
         </Button>

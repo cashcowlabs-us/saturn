@@ -1,6 +1,5 @@
 "use client";
 
-
 import React, { useState, ChangeEvent } from "react";
 import { useMutation } from "@tanstack/react-query";
 import Papa from "papaparse";
@@ -19,7 +18,6 @@ export interface CSVRow {
   "DR-60-100": string;
   Industry: string;
 }
-
 
 export interface WebsiteRow {
   Site: string;
@@ -50,16 +48,18 @@ const FileUploadSection: React.FC<FileUploadSectionProps> = ({
 }) => {
   const [fileName, setFileName] = useState<string>("");
   const [websiteFileName, setWebsiteFileName] = useState<string>("");
+  const [token, setToken] = useState<number | undefined>(undefined);
 
   const mutation = useMutation({
     mutationFn: async (data: CSVRow[]) => {
+      console.log("Submitting CSV data:", { name, data, token }); // Debugging
       data.pop();
       const response = await fetch(`${config.backendUrl}/projects`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ name, data }),
+        body: JSON.stringify({ name, data, token }), // Include name in the request body
       });
       if (!response.ok) throw new Error("Network response was not ok");
       return response.json();
@@ -71,6 +71,7 @@ const FileUploadSection: React.FC<FileUploadSectionProps> = ({
 
   const websiteMutation = useMutation({
     mutationFn: async (data: WebsiteRow[]) => {
+      console.log("Submitting Website data:", { data }); // Debugging
       data.pop();
       const response = await fetch(`${config.backendUrl}/websites`, {
         method: 'POST',
@@ -91,9 +92,10 @@ const FileUploadSection: React.FC<FileUploadSectionProps> = ({
     const file = event.target.files?.[0];
     if (file) {
       setFileName(file.name);
-      Papa.parse<string[]>(file, {
+      Papa.parse(file, {
         complete: (results) => {
-          const [headers, ...rows] = results.data;
+          console.log("CSV parsing results:", results); // Debugging
+          const [headers, ...rows] = results.data as string[][];
           const processedData: CSVRow[] = rows.map((row) => {
             const obj: Partial<CSVRow> = {};
             (headers as Array<keyof CSVRow>).forEach((header, index) => {
@@ -101,6 +103,7 @@ const FileUploadSection: React.FC<FileUploadSectionProps> = ({
             });
             return obj as CSVRow;
           });
+          console.log("Processed CSV data:", processedData); // Debugging
           setCsvData(processedData);
         },
         header: false,
@@ -112,9 +115,10 @@ const FileUploadSection: React.FC<FileUploadSectionProps> = ({
     const file = event.target.files?.[0];
     if (file) {
       setWebsiteFileName(file.name);
-      Papa.parse<string[]>(file, {
+      Papa.parse(file, {
         complete: (results) => {
-          const [headers, ...rows] = results.data;
+          console.log("Website CSV parsing results:", results); // Debugging
+          const [headers, ...rows] = results.data as string[][];
           const processedData: WebsiteRow[] = rows.map((row) => {
             const obj: Partial<WebsiteRow> = {};
             (headers as Array<keyof WebsiteRow>).forEach((header, index) => {
@@ -122,6 +126,7 @@ const FileUploadSection: React.FC<FileUploadSectionProps> = ({
             });
             return obj as WebsiteRow;
           });
+          console.log("Processed Website data:", processedData); // Debugging
           setWebsiteData(processedData);
         },
         header: false,
@@ -130,16 +135,28 @@ const FileUploadSection: React.FC<FileUploadSectionProps> = ({
   };
 
   const handleSubmit = () => {
+    console.log("Submitting CSV data with token:", { csvData, token }); // Debugging
     mutation.mutate(csvData);
   };
 
   const handleWebsiteSubmit = () => {
+    console.log("Submitting Website data:", { websiteData }); // Debugging
     websiteMutation.mutate(websiteData);
   };
 
   return (
     <div className="space-y-8">
       <div className="space-y-4">
+        <div>
+          <Label htmlFor="name">Project Name</Label>
+          <Input
+            id="name"
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Enter project name"
+          />
+        </div>
         <div>
           <Label htmlFor="project-csv">Project CSV</Label>
           <Input id="project-csv" type="file" accept=".csv" onChange={handleFileUpload} />
@@ -148,6 +165,16 @@ const FileUploadSection: React.FC<FileUploadSectionProps> = ({
               <FiFileText className="mr-1 inline-block" /> {fileName}
             </p>
           )}
+        </div>
+        <div>
+          <Label htmlFor="token">Token</Label>
+          <Input
+            id="token"
+            type="number"
+            value={token || ''}
+            onChange={(e) => setToken(Number(e.target.value))}
+            placeholder="Enter token number"
+          />
         </div>
         <Button onClick={handleSubmit} className="mt-2 w-full">
           <FiCheck className="mr-2" /> Submit Project CSV
