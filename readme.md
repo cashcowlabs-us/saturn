@@ -21,7 +21,6 @@ graph TD
     J --> F
     J --> G
     J --> H
-
 ```
 
 1. Frontend:
