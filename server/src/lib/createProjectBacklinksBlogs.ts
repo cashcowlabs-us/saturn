@@ -26,13 +26,15 @@ export default async function createProjectBacklinksBlogs(input: z.infer<typeof 
 
         // Call the createBlogPost function
         const previousBlog = await redis.get("previousBlog");
-        const prompt = `Make sure to generate no extra text. Create a blog post using the primary keyword: ${backlink.data.industry} and the secondary keyword: ${backlink.data.seconday_keyword}. The blog post should include a title and body. Return the result in JSON format with the following structure:
+        const prompt = `Make sure to generate no extra text, generate output as json. Create a blog post using the primary keyword: ${backlink.data.industry} and the secondary keyword: ${backlink.data.seconday_keyword}. The blog post should include a title and body. Return the result in JSON format with the following structure:
         {
           "title": "Your blog post title here",
           "body": "Your blog post content here"
         }`;
 
         const res = await contentGenerator.generateContent(previousBlog + prompt);
+        console.log(res);
+        
         if (res instanceof Error) {
             return new Error(`E002: Failed to generate content: ${res.message}`);
         }
