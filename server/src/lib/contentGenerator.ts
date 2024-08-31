@@ -5,5 +5,3 @@ Content Generator:
    - May integrate with AI language models (e.g., GPT) for content creation.
    - Handles the bulk of the workload, generating 10K blogs daily.
 */
-
-throw new Error("Not implemented");

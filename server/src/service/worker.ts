@@ -8,12 +8,12 @@ new Worker(queue.name, async (job) => {
     switch (job.name) {
         case "createBacklink": {
             const res = await createProjectBacklinks(job.data);
-            console.log("createProjectBacklinks ",res);
+            console.error("createProjectBacklinks ",res);
             break;
         }
         case "createBacklinkBlog": {
             const res = await createProjectBacklinksBlogs(job.data);
-            console.log("createProjectBacklinksBlogs ",res);
+            console.error("createProjectBacklinksBlogs ",res);
             break;
         }
     }

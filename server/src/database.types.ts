@@ -9,6 +9,39 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      api_keys: {
+        Row: {
+          id: string
+          key: string
+          message: string | null
+          requests_remaining: number
+          requests_reset_time: string
+          state: boolean
+          tokens_remaining: number
+          tokens_reset_time: string
+        }
+        Insert: {
+          id: string
+          key: string
+          message?: string | null
+          requests_remaining: number
+          requests_reset_time: string
+          state?: boolean
+          tokens_remaining: number
+          tokens_reset_time: string
+        }
+        Update: {
+          id?: string
+          key?: string
+          message?: string | null
+          requests_remaining?: number
+          requests_reset_time?: string
+          state?: boolean
+          tokens_remaining?: number
+          tokens_reset_time?: string
+        }
+        Relationships: []
+      }
       backlink: {
         Row: {
           backlink: string
@@ -55,24 +88,45 @@ export type Database = {
       }
       blogs: {
         Row: {
+          backlink_uuid: string
           content: string
           created_at: string | null
           id: string
+          project_uuid: string
           title: string
         }
         Insert: {
+          backlink_uuid: string
           content: string
           created_at?: string | null
           id?: string
+          project_uuid: string
           title: string
         }
         Update: {
+          backlink_uuid?: string
           content?: string
           created_at?: string | null
           id?: string
+          project_uuid?: string
           title?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "blogs_backlink_uuid_fkey"
+            columns: ["backlink_uuid"]
+            isOneToOne: false
+            referencedRelation: "backlink"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "blogs_project_uuid_fkey"
+            columns: ["project_uuid"]
+            isOneToOne: false
+            referencedRelation: "project"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       project: {
         Row: {
