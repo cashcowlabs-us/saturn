@@ -5,20 +5,8 @@ import { createAddWebstePostHandler } from "../lib/handler/createAddWebsteHandle
 import { z } from "zod";
 import { keyManager } from "../lib/openapikeyManager";
 import cors from "cors";
-import winston from "winston";
-
-// Configure winston logger
-const logger = winston.createLogger({
-  level: 'info',
-  format: winston.format.combine(
-    winston.format.timestamp(),
-    winston.format.json()
-  ),
-  transports: [
-    new winston.transports.Console(),
-    new winston.transports.File({ filename: 'app.log' })
-  ]
-});
+import logger from "../utils/log";
+import supabase from "../utils/supabase";
 
 const app = express();
 app.use(express.json());
@@ -30,7 +18,7 @@ const apiKeySchema = z.object({
   key: z.string().min(1, { message: 'API key is required' }),
 });
 
-app.post("/project", async (req, res) => {
+app.post("/projects", async (req, res) => {
   try {
     logger.info("Received request to /project", { requestBody: req.body });
     await createProjectHandler(req, res);
@@ -40,6 +28,37 @@ app.post("/project", async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
+
+app.get("/project/:id", async (req, res) => {
+  try {
+    logger.info("Received request to /project/:id", { params: req.params });
+    const { id } = req.params;
+    const result = await supabase.from("blogs").select("*").eq("project_uuid", id);
+    if (result.error) {
+      logger.error("Error in /project/:id route:", { error: result.error.message });
+      return res.status(500).json({ error: "Internal Server Error" });
+    }
+    return res.status(200).json({ message: 'Project retrieved successfully', data: result.data });
+  } catch (error: any) {
+    logger.error("Error in /project/:id route:", { error: error.message });
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+})
+
+app.get("/projects", async (req, res) => {
+  try {
+    logger.info("Received request to /projects", { params: req.params });
+    const result = await supabase.from("project").select("*");
+    if (result.error) {
+      logger.error("Error in /project route:", { error: result.error.message });
+      return res.status(500).json({ error: "Internal Server Error" });
+    }
+    return res.status(200).json({ message: 'Project retrieved successfully', data: result.data });
+  } catch(error: any) {
+    logger.error("Error in /project route:", { error: error.message });
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+})
 
 app.post("/website", async (req, res) => {
   try {
@@ -64,7 +83,7 @@ app.post('/keys', async (req, res) => {
     await keyManager.addKey(key);
     logger.info("API key added successfully", { key });
     res.status(201).json({ message: 'API key added successfully' });
-  } catch (error : any) {
+  } catch (error: any) {
     logger.error("Error in /keys POST route:", { error: error.message });
     res.status(500).json({ error: "Internal Server Error" });
   }
@@ -82,7 +101,7 @@ app.delete('/keys', async (req, res) => {
     await keyManager.removeKey(key);
     logger.info("API key removed successfully", { key });
     res.status(200).json({ message: 'API key removed successfully' });
-  } catch (error : any) {
+  } catch (error: any) {
     logger.error("Error in /keys DELETE route:", { error: error.message });
     res.status(500).json({ error: "Internal Server Error" });
   }
