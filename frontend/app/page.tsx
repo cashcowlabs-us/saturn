@@ -118,21 +118,21 @@ export default function Home() {
   };
 
   return (
-    <main className="flex min-h-screen bg-gray-100">
+    <main className="flex flex-col lg:flex-row min-h-screen bg-gray-100">
       <motion.div 
-        className="flex-1 p-8"
+        className="w-full lg:w-1/2 p-4 lg:p-8"
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.5 }}
       >
         <Card className="w-full h-full">
           <CardHeader>
-            <CardTitle className="text-2xl font-bold flex items-center">
+            <CardTitle className="text-xl lg:text-2xl font-bold flex items-center">
               <FiList className="mr-2" /> Projects
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <ScrollArea className="h-[calc(100vh-200px)]">
+            <ScrollArea className="h-[50vh] lg:h-[calc(100vh-200px)]">
               {isLoading ? (
                 <div className="space-y-4">
                   {[...Array(5)].map((_, index) => (
@@ -164,17 +164,17 @@ export default function Home() {
                         className="cursor-pointer hover:shadow-md transition-shadow"
                       >
                         <CardHeader>
-                          <CardTitle className="flex items-center">
+                          <CardTitle className="text-lg lg:text-xl flex items-center">
                             <RiRocketLine className="mr-2 text-blue-500" />
                             {project.name}
                           </CardTitle>
                         </CardHeader>
                         <CardContent>
-                          <p className="text-sm text-gray-600 flex items-center">
+                          <p className="text-xs lg:text-sm text-gray-600 flex items-center">
                             <FiClock className="mr-1" />
                             {new Date(project.createdat).toLocaleString()}
                           </p>
-                          <p className="text-sm mt-2 flex items-center">
+                          <p className="text-xs lg:text-sm mt-2 flex items-center">
                             <FiFileText className="mr-1" />
                             {project.message}
                           </p>
@@ -185,14 +185,14 @@ export default function Home() {
                 </motion.div>
               ) : (
                 <motion.div
-                  className="text-center p-8"
+                  className="text-center p-4 lg:p-8"
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.5 }}
                 >
                   <WavingHand />
                   <motion.p
-                    className="text-xl font-semibold mb-4 mt-4"
+                    className="text-lg lg:text-xl font-semibold mb-2 lg:mb-4 mt-2 lg:mt-4"
                     initial={{ y: 20, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
                     transition={{ delay: 0.2 }}
@@ -200,7 +200,7 @@ export default function Home() {
                     Welcome! No projects found
                   </motion.p>
                   <motion.p
-                    className="text-gray-600"
+                    className="text-sm lg:text-base text-gray-600"
                     initial={{ y: 20, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
                     transition={{ delay: 0.4 }}
@@ -214,17 +214,17 @@ export default function Home() {
         </Card>
       </motion.div>
 
-      <div className="w-px bg-gray-200 self-stretch mx-4" />
+      <div className="hidden lg:block w-px bg-gray-200 self-stretch mx-4" />
 
       <motion.div
-        className="flex-1 p-8 flex items-center justify-center"
+        className="w-full lg:w-1/2 p-4 lg:p-8 flex items-center justify-center"
         initial={{ opacity: 0, x: 20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.5 }}
       >
         <Card className="w-full max-w-md">
           <CardHeader>
-            <CardTitle className="text-2xl font-bold flex items-center justify-center">
+            <CardTitle className="text-xl lg:text-2xl font-bold flex items-center justify-center">
               <FiUpload className="mr-2" /> Upload CSV
             </CardTitle>
           </CardHeader>
@@ -261,7 +261,7 @@ export default function Home() {
               <AnimatePresence>
                 {fileName && (
                   <motion.p
-                    className="text-sm text-gray-500 mt-1 truncate"
+                    className="text-xs lg:text-sm text-gray-500 mt-1 truncate"
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
