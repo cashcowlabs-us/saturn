@@ -174,7 +174,7 @@ export function createContentGenerator(keyManager: ReturnType<typeof createKeyMa
                     body: JSON.stringify({
                         model: "gpt-4o-mini",
                         messages: [{ role: "user", content: prompt }],
-                        max_tokens: 100
+                        max_tokens: 500
                     })
                 });
                 
