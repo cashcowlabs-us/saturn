@@ -118,12 +118,8 @@ app.get("/projects", async (req, res) => {
 app.post('/keys', async (req, res) => {
   try {
     logger.info("Received request to add API key", { requestBody: req.body });
-    const validation = apiKeySchema.safeParse(req.body);
-    if (!validation.success) {
-      logger.warn("Validation failed in /keys POST route", { errors: validation.error.errors });
-      return res.status(400).json({ error: validation.error.errors[0].message });
-    }
-    const { key } = validation.data;
+    const validation = apiKeySchema.parse(req.body);
+    const { key } = validation;
     await keyManager.addKey(key);
     logger.info("API key added successfully", { key });
     res.status(201).json({ message: 'API key added successfully' });

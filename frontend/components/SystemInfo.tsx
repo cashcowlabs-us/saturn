@@ -34,15 +34,6 @@ const InfoSection: React.FC = () => {
 
   return (
     <div className="w-full p-4">
-      <h2 className="text-xl font-bold mb-4 flex items-center"><FaCalendarAlt className="mr-2" />Capacity Calculator</h2>
-      <h4>Enter number of tokens per blog</h4>
-      <input
-        type="number"
-        value={tokens}
-        onChange={handleTokenChange}
-        className="mb-4 px-4 py-2 border border-gray-300 rounded"
-        placeholder="Enter tokens"
-      />
       {isError && (
         <div className="flex items-center text-red-500 mb-4">
           <FaExclamationTriangle className="mr-2" />

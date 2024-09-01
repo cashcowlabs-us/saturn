@@ -8,14 +8,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import ApiKeyInfo from "./ApiKeyInfo";
+import config from "@/lib/config";
 
 const submitApiKey = async (apiKey: string) => {
-  const response = await fetch('/keys', {
+  console.log("Submitting API key:", apiKey);
+  
+  const response = await fetch(config.backendUrl + '/keys', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ data: apiKey }),
+    body: JSON.stringify({ key: apiKey }),
   });
   if (!response.ok) {
     throw new Error('Failed to submit API key');

@@ -7,6 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import config from "@/lib/config";
 import { Alert, AlertDescription } from "./ui/alert";
+import { useMaxBlogs } from "@/app/systemApiInfo";
+import { FaSpinner } from 'react-icons/fa';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface ProjectData {
   backlink: string;
@@ -44,6 +47,10 @@ const FileUploadSection: React.FC<FileUploadSectionProps> = ({ refetch }) => {
     websiteCsv: true,
   });
   const [isSubmitDisabled, setIsSubmitDisabled] = useState(true);
+  const [totalBlogs, setTotalBlogs] = useState<number>(0);
+  const [deficit, setDeficit] = useState<number>(0);
+
+  const { maxBlogs, isLoading: isMaxBlogsLoading, isError: isMaxBlogsError, error: maxBlogsError } = useMaxBlogs(token || 0);
 
   const mutation = useMutation({
     mutationFn: async (data: {
@@ -52,7 +59,6 @@ const FileUploadSection: React.FC<FileUploadSectionProps> = ({ refetch }) => {
       data: ProjectData[];
       website: WebsiteData[];
     }) => {
-      console.log(data);
       const response = await fetch(`${config.backendUrl}/projects`, {
         method: 'POST',
         headers: {
@@ -73,8 +79,27 @@ const FileUploadSection: React.FC<FileUploadSectionProps> = ({ refetch }) => {
       token !== undefined &&
       projectData.length > 0 &&
       websiteData.length > 0;
+
     setIsSubmitDisabled(!isDataValid);
-  }, [name, token, projectData, websiteData]);
+
+    if (isDataValid && !isMaxBlogsLoading && !isMaxBlogsError) {
+      // Calculate total blogs
+      const calculatedTotalBlogs = projectData.reduce((acc, project) => {
+        const dr0_30 = parseInt(project.dr_0_30, 10) || 0;
+        const dr30_60 = parseInt(project.dr_30_60, 10) || 0;
+        const dr60_100 = parseInt(project.dr_60_100, 10) || 0;
+
+        return acc + dr0_30 + dr30_60 + dr60_100;
+      }, 0);
+
+      setTotalBlogs(calculatedTotalBlogs);
+
+      // Calculate deficit
+      if (maxBlogs !== undefined) {
+        setDeficit(calculatedTotalBlogs > maxBlogs ? calculatedTotalBlogs - maxBlogs : 0);
+      }
+    }
+  }, [name, token, projectData, websiteData, maxBlogs, isMaxBlogsLoading, isMaxBlogsError]);
 
   const handleProjectFileUpload = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -139,7 +164,7 @@ const FileUploadSection: React.FC<FileUploadSectionProps> = ({ refetch }) => {
 
   const AlertComponent = ({ show, setShow, children }: { show: boolean; setShow: (show: boolean) => void; children: React.ReactNode }) => (
     show && (
-      <Alert className="mt-2 mb-4 bg-yellow-50 border-yellow-200 text-yellow-800">
+      <Alert className="mt-2 mb-4 bg-yellow-50 border-yellow-200 text-yellow-800 shadow-lg rounded-lg">
         <AlertDescription className="flex justify-between items-start">
           {children}
           <Button
@@ -165,47 +190,84 @@ const FileUploadSection: React.FC<FileUploadSectionProps> = ({ refetch }) => {
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Enter project name"
+            className="border-gray-300 shadow-sm"
           />
         </div>
         <div className="space-y-2">
           <Label htmlFor="project-csv">Project CSV</Label>
           <AlertComponent show={showAlerts.projectCsv} setShow={(show) => setShowAlerts(prev => ({ ...prev, projectCsv: show }))}>
-            <div>Upload a CSV file containing your project data. For reference, we've provided a sample Excel file <a className="text-blue-500" href="https://docs.google.com/spreadsheets/d/1r-Ce5F2pA4G-6R7u-_hQJUbyOfCzCcBQsJfQo_jgww8/edit?gid=362884328#gid=362884328">here</a>.</div>
+            <div>Upload a CSV file containing your project data. For reference, we've provided a sample Excel file <a className="text-blue-500 hover:underline" href="https://docs.google.com/spreadsheets/d/1r-Ce5F2pA4G-6R7u-_hQJUbyOfCzCcBQsJfQo_jgww8/edit?gid=362884328#gid=362884328">here</a>.</div>
           </AlertComponent>
           <Input id="project-csv" type="file" accept=".csv" onChange={handleProjectFileUpload} />
           {projectFileName && (
-            <p className="text-sm text-gray-600 mt-2">
-              <FiFileText className="mr-1 inline-block" /> {projectFileName}
+            <p className="text-sm text-gray-600 mt-2 flex items-center">
+              <FiFileText className="mr-1 text-gray-400" /> {projectFileName}
             </p>
           )}
         </div>
         <div className="space-y-2">
           <Label htmlFor="website-csv">Website CSV</Label>
           <AlertComponent show={showAlerts.websiteCsv} setShow={(show) => setShowAlerts(prev => ({ ...prev, websiteCsv: show }))}>
-            <div>Upload a CSV file containing website data. For reference, we've provided a sample Excel file <a className="text-blue-500" href="https://docs.google.com/spreadsheets/d/1r-Ce5F2pA4G-6R7u-_hQJUbyOfCzCcBQsJfQo_jgww8/edit?gid=0#gid=0">here</a>.</div>
+            <div>Upload a CSV file containing website data. For reference, we've provided a sample Excel file <a className="text-blue-500 hover:underline" href="https://docs.google.com/spreadsheets/d/1r-Ce5F2pA4G-6R7u-_hQJUbyOfCzCcBQsJfQo_jgww8/edit?gid=362884328#gid=362884328">here</a>.</div>
           </AlertComponent>
           <Input id="website-csv" type="file" accept=".csv" onChange={handleWebsiteFileUpload} />
           {websiteFileName && (
-            <p className="text-sm text-gray-600 mt-2">
-              <FiFileText className="mr-1 inline-block" /> {websiteFileName}
+            <p className="text-sm text-gray-600 mt-2 flex items-center">
+              <FiFileText className="mr-1 text-gray-400" /> {websiteFileName}
             </p>
           )}
         </div>
         <div className="space-y-2">
           <Label htmlFor="token">Token</Label>
-          <AlertComponent show={showAlerts.token} setShow={(show) => setShowAlerts(prev => ({ ...prev, token: show }))}>
-            Enter the estimated token usage per blog. This represents the anticipated number of tokens required for each blog.
+          <AlertComponent show={showAlerts.projectCsv} setShow={(show) => setShowAlerts(prev => ({ ...prev, projectCsv: show }))}>
+            <div>Controlls the length of the blogs</div>
           </AlertComponent>
           <Input
             id="token"
             type="number"
-            value={token || ''}
-            onChange={(e) => setToken(Number(e.target.value))}
-            placeholder="Enter token number"
+            value={token || ""}
+            onChange={(e) => setToken(parseInt(e.target.value))}
+            placeholder="Enter token"
+            className="border-gray-300 shadow-sm"
           />
         </div>
-        <Button onClick={handleSubmit} className="mt-2 w-full" disabled={isSubmitDisabled}>
-          <FiCheck className="mr-2" /> Submit Project
+        <div className="space-y-2">
+          <h3 className="text-lg font-semibold">Blog Generation Summary</h3>
+          {isMaxBlogsLoading ? (
+            <div className="flex items-center space-x-2">
+              <Skeleton className="h-6 w-8 rounded-md">
+                <FaSpinner className="animate-spin" />
+              </Skeleton>
+            </div>
+          ) : (
+            <div className="space-y-2 p-4 rounded-md">
+              <p className="text-lg font-semibold">Total blogs to be generated: <span className="font-normal">{totalBlogs}</span></p>
+              {maxBlogs !== undefined && (
+                <div className="space-y-1">
+                  <p className="text-lg font-semibold">Maximum Blogs we can generate with current api keys: <span className="font-normal">{maxBlogs}</span></p>
+                  {deficit > 0 ? (
+                    <p className="text-red-600">Deficit: <span className="font-medium">{deficit}</span></p>
+                  ) : (
+                    <p className="text-green-600">Within Allowable Limit</p>
+                  )}
+                </div>
+              )}
+              {isMaxBlogsError && (
+                <p className="text-red-600 font-medium">Error: {maxBlogsError?.message}</p>
+              )}
+            </div>
+          )}
+        </div>
+        <Button
+          onClick={handleSubmit}
+          disabled={isSubmitDisabled}
+          className={`w-full py-2 text-white font-semibold rounded-lg bg-black`}
+        >
+          {mutation.isPending ? (
+            <FaSpinner className="animate-spin mr-2" />
+          ) : (
+            "Submit"
+          )}
         </Button>
       </div>
     </div>
