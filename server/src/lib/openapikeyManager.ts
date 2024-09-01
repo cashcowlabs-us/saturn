@@ -17,6 +17,24 @@ interface OpenAIKey {
 export function createKeyManager(supabase: SupabaseClient<Database>) {
     let currentKeyIndex = 0;
 
+    async function calculateBlogs(tokensPerBlog: number): Promise<number> {
+        const { data: keys, error } = await supabase
+            .from('api_keys')
+            .select('tokens_remaining')
+            .eq('state', true);
+
+        if (error) throw error;
+        if (!keys || keys.length === 0) {
+            return 0; // No active keys, no blogs can be generated
+        }
+
+        const totalTokensRemaining = keys.reduce((total, key) => total + key.tokens_remaining, 0);
+        const totalBlogs = Math.floor(totalTokensRemaining / tokensPerBlog);
+
+        return totalBlogs;
+    }
+
+
     async function addKey(key: string): Promise<void> {
         console.log(`Adding key: ${key}`);
 
@@ -230,21 +248,14 @@ export function createKeyManager(supabase: SupabaseClient<Database>) {
         }, new Date(Date.now() + 3600000));
     }
 
-    function calculateMaxBlogs(tokensRemaining: number, tokensPerBlog: number): number {
-        return Math.floor(tokensRemaining / tokensPerBlog);
-    }
 
-    function calculateDaysToExhaustTokens(tokensRemaining: number, tokensPerDay: number): number {
-        return Math.ceil(tokensRemaining / tokensPerDay);
-    }
 
     return {
         addKey,
         removeKey,
         executeRequest,
         refreshKeys,
-        calculateMaxBlogs,
-        calculateDaysToExhaustTokens
+        calculateBlogs
     };
 }
 
@@ -285,33 +296,8 @@ export function createContentGenerator(keyManager: ReturnType<typeof createKeyMa
         }
     }
 
-    async function getTokenUsage(): Promise<number> {
-        try {
-            const { data: keys, error } = await supabase
-                .from('api_keys')
-                .select('tokens_remaining')
-                .eq('state', true);
-
-            if (error) throw error;
-            if (!keys || keys.length === 0) return 0;
-
-            return keys.reduce((total, key) => total + key.tokens_remaining, 0);
-        } catch (error) {
-            console.error('Error retrieving token usage:', error);
-            return 0;
-        }
-    }
-
-
-    async function calculateTokenUsagePerDay(): Promise<number> {
-        const totalTokens = await getTokenUsage();
-        // Estimate based on average daily usage (example: 1000 tokens/day)
-        return totalTokens / 500; // Assume a month has 30 days
-    }
-
     return {
         generateContent,
-        calculateTokenUsagePerDay
     };
 }
 

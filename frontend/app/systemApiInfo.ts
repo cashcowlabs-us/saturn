@@ -2,60 +2,36 @@ import { useQuery } from "@tanstack/react-query";
 import config from "../lib/config";
 
 // Fetch max blogs
-const fetchMaxBlogs = async (tokens: number) => {
-  const response = await fetch(`${config.backendUrl}/info/max-blogs/${tokens}`);
+const fetchMaxBlogs = async (tokensPerBlog: number) => {
+  const response = await fetch(`${config.backendUrl}/info/cal`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ value: tokensPerBlog }),
+  });
   if (!response.ok) {
     throw new Error("Failed to fetch max blogs");
   }
   const result = await response.json();
-  return result.maxBlogs;
-};
-
-// Fetch days to exhaust tokens
-const fetchDaysToExhaust = async (tokens: number) => {
-  const response = await fetch(`${config.backendUrl}/info/days-to-exhaust/${tokens}`);
-  if (!response.ok) {
-    throw new Error("Failed to fetch days to exhaust");
-  }
-  const result = await response.json();
-  return result.daysToExhaust;
-};
-
-// Fetch token usage daily
-const fetchTokenUsageDaily = async () => {
-  const response = await fetch(`${config.backendUrl}/info/token-usage-daily`);
-  if (!response.ok) {
-    throw new Error("Failed to fetch token usage daily");
-  }
-  const result = await response.json();
-  return result.tokenUsagePerDay;
+  return result.value;
 };
 
 // Custom hook to use API info
-export const useApiInfo = (tokens: number) => {
+export const useMaxBlogs = (tokensPerBlog: number) => {
   const maxBlogsQuery = useQuery({
-    queryKey: ['maxBlogs', tokens],
-    queryFn: () => fetchMaxBlogs(tokens),
-    enabled: tokens > 0, // Only fetch if tokens are positive
+    queryKey: ['maxBlogs', tokensPerBlog],
+    queryFn: () => fetchMaxBlogs(tokensPerBlog),
+    enabled: tokensPerBlog > 0, // Only fetch if tokensPerBlog is positive
   });
 
-  const daysToExhaustQuery = useQuery({
-    queryKey: ['daysToExhaust', tokens],
-    queryFn: () => fetchDaysToExhaust(tokens),
-    enabled: tokens > 0, // Only fetch if tokens are positive
-  });
-
-  const tokenUsageDailyQuery = useQuery({
-    queryKey: ['tokenUsageDaily'],
-    queryFn: fetchTokenUsageDaily,
-  });
+  console.log("maxBlogsQuery:", maxBlogsQuery.data);
+  
 
   return {
     maxBlogs: maxBlogsQuery.data,
-    daysToExhaust: daysToExhaustQuery.data,
-    tokenUsageDaily: tokenUsageDailyQuery.data,
-    isLoading: maxBlogsQuery.isLoading || daysToExhaustQuery.isLoading || tokenUsageDailyQuery.isLoading,
-    isError: maxBlogsQuery.isError || daysToExhaustQuery.isError || tokenUsageDailyQuery.isError,
-    error: maxBlogsQuery.error || daysToExhaustQuery.error || tokenUsageDailyQuery.error,
+    isLoading: maxBlogsQuery.isLoading,
+    isError: maxBlogsQuery.isError,
+    error: maxBlogsQuery.error,
   };
 };

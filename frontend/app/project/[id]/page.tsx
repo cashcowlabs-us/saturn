@@ -2,14 +2,14 @@
 
 import React, { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import config from "@/lib/config";
 import { motion, AnimatePresence } from "framer-motion";
-import { FiRefreshCw, FiCalendar, FiArrowRight, FiBox, FiDollarSign } from "react-icons/fi";
+import { FiRefreshCw, FiCalendar, FiArrowRight, FiBox } from "react-icons/fi";
 import { RiRocketLine, RiLightbulbFlashLine, RiSearchEyeLine, RiBarChartBoxLine, RiTrophyLine, RiToolsLine, RiLineChartLine, RiFlag2Line } from "react-icons/ri";
 
 const projectIcons = [
@@ -29,9 +29,9 @@ const LoadingSpinner = () => (
       animate={{ rotate: 360 }}
       transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
     >
-      <FiRefreshCw className="w-8 h-8 text-blue-500" />
+      <FiRefreshCw className="w-8 h-8 text-black" />
     </motion.span>
-    <span className="text-xl font-semibold text-gray-700">Generating...</span>
+    <span className="text-xl font-semibold text-gray-800">Generating...</span>
   </div>
 );
 
@@ -76,6 +76,25 @@ export default function Page() {
     refetchInterval: 10000,
   });
 
+  const regenerateMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch(`${config.backendUrl}/project/regenerate/${params.id}`, {
+        method: 'POST',
+      });
+      if (!response.ok) {
+        throw new Error("Failed to regenerate project");
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      projectQuery.refetch();
+      blogsQuery.refetch();
+    },
+    onError: (error: Error) => {
+      alert(error.message); // Handle error (you may want to show it differently)
+    },
+  });
+
   useEffect(() => {
     const interval = setInterval(() => {
       setIsGenerating(true);
@@ -91,13 +110,17 @@ export default function Page() {
       .then(() => setIsGenerating(false));
   };
 
+  const handleRegenerate = () => {
+    regenerateMutation.mutate();
+  };
+
   if (projectQuery.isLoading || blogsQuery.isLoading) {
-    return <div className="container mx-auto p-4 bg-gray-50 min-h-screen"><ProjectSkeleton /></div>;
+    return <div className="container mx-auto p-4 bg-white min-h-screen"><ProjectSkeleton /></div>;
   }
 
   if (projectQuery.error || blogsQuery.error) {
     return (
-      <div className="container mx-auto p-4 bg-gray-50 min-h-screen">
+      <div className="container mx-auto p-4 bg-white min-h-screen">
         <Alert variant="destructive">
           <AlertDescription>Error: {projectQuery.error?.message || blogsQuery.error?.message}</AlertDescription>
         </Alert>
@@ -108,18 +131,32 @@ export default function Page() {
   const project = projectQuery.data?.data;
   const blogs = blogsQuery.data;
 
+  const totalDr0_30 = projectQuery.data.backlink.reduce((sum: any, item: any) => sum + item.dr_0_30, 0);
+  const totalDr30_60 = projectQuery.data.backlink.reduce((sum: any, item: any) => sum + item.dr_30_60, 0);
+  const totalDr60_100 = projectQuery.data.backlink.reduce((sum: any, item: any) => sum + item.dr_60_100, 0);
+
+  const totalDr = totalDr0_30 + totalDr30_60 + totalDr60_100;
+
+
+
   return (
-    <div className="container mx-auto p-4 bg-gray-50 min-h-screen">
+    <div className="container mx-auto p-4 bg-white min-h-screen">
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-3xl font-bold text-gray-800 flex items-center">
+          <FiBox className="mr-2" />
+          {project.name || `Project ${params.id}`}
+        </h1>
+        <Button onClick={handleRegenerate} variant="outline" className="text-black border-black hover:bg-gray-200">
+          Regenerate Project
+        </Button>
+      </div>
+
       <motion.div
         className="bg-white rounded-lg p-6 mb-8"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <h1 className="text-3xl font-bold text-gray-800 flex items-center justify-center mb-4">
-          <FiBox className="mr-2" />
-          {project.name || `Project ${params.id}`}
-        </h1>
         <Alert>
           <AlertDescription>
             We spread out the generation time to maximize the possible generating scenarios. New content may appear periodically.
@@ -134,18 +171,23 @@ export default function Page() {
           </div>
           <div className="flex items-center mb-4 lg:mb-0">
             <FiBox className="text-xl mr-2 text-gray-600" />
-            <span className=" font-semibold text-gray-800">
+            <span className="font-semibold text-gray-800">
               Project ID: {project.id}
             </span>
           </div>
           <div className="flex items-center mb-4 lg:mb-0">
             <FiBox className="text-xl mr-2 text-gray-600" />
-            <span className=" font-semibold text-gray-800">
+            <span className="font-semibold text-gray-800">
               Total Blogs: {blogs.data?.length || 0}
             </span>
           </div>
+          <div className="flex items-center mb-4 lg:mb-0">
+            <FiBox className="text-xl mr-2 text-gray-600" />
+            <span className="font-semibold text-gray-800">
+              Target Total: {totalDr || 0}
+            </span>
+          </div>
         </div>
-
       </motion.div>
 
       <AnimatePresence>
@@ -185,7 +227,7 @@ export default function Page() {
                   transition={{ duration: 0.3 }}
                 >
                   <Card className="overflow-hidden">
-                    <CardHeader className="bg-gradient-to-r from-blue-500 to-purple-600 text-white">
+                    <CardHeader className="bg-gray-200 text-black">
                       <h2 className="text-xl font-semibold flex items-center">
                         <Icon className="mr-2 w-6 h-6" />
                         {blog.title}
@@ -194,12 +236,12 @@ export default function Page() {
                     <CardContent className="pt-4">
                       <p className="text-gray-700">{blog.content}</p>
                     </CardContent>
-                    <CardFooter className="bg-gray-50 flex justify-between items-center">
+                    <CardFooter className="bg-gray-100 flex justify-between items-center">
                       <p className="text-sm text-gray-600 flex items-center">
                         <FiCalendar className="mr-1" />
                         {new Date(blog.created_at).toLocaleDateString()}
                       </p>
-                      <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-800">
+                      <Button variant="ghost" size="sm" className="text-black hover:text-gray-800">
                         Details <FiArrowRight className="ml-1" />
                       </Button>
                     </CardFooter>
@@ -213,9 +255,11 @@ export default function Page() {
 
       {isGenerating && <LoadingSpinner />}
 
-      <Button onClick={handleRefresh} className="mt-8" variant="outline">
-        Refresh Data
-      </Button>
+      <div className="mt-8 flex space-x-4">
+        <Button onClick={handleRefresh} variant="outline" className="text-black border-black hover:bg-gray-200">
+          Refresh Data
+        </Button>
+      </div>
     </div>
   );
 }

@@ -3,10 +3,11 @@ import config from "../utils/config";
 import createProjectHandler from "../lib/handler/createProject";
 import { createAddWebstePostHandler } from "../lib/handler/createAddWebsteHandler";
 import { z } from "zod";
-import { contentGenerator, keyManager } from "../lib/openapikeyManager";
+import { keyManager } from "../lib/openapikeyManager";
 import cors from "cors";
 import logger from "../utils/log";
 import supabase from "../utils/supabase";
+import { queue } from "../utils/queue";
 
 const app = express();
 app.use(express.json());
@@ -46,15 +47,54 @@ app.get("/project/blogs/:id", async (req, res) => {
 })
 
 app.get("/project/:id", async (req, res) => {
-  try{
+  try {
     logger.info("Received request to /project/:id", { params: req.params });
     const { id } = req.params;
     const result = await supabase.from("project").select("*").eq("id", id).single();
-    if (result.error) {
-      logger.error("Error in /project/:id route:", { error: result.error.message });
+    if(result.data == null) {
+      return res.status(404).json({ error: "Project not found" });
+    }
+    const backlink = await supabase.from("backlink").select("*").eq("project_uuid", result.data.id);
+    if (backlink.data === null) {
+      return res.status(404).json({ error: "Backlink not found" });
+    }
+    if (result.error !== null) {
+      logger.error("Error in /project/:id route:", { error: "error" });
       return res.status(500).json({ error: "Internal Server Error" });
     }
-    return res.status(200).json({ message: 'Project retrieved successfully', data: result.data });
+    return res.status(200).json({ message: 'Project retrieved successfully', data: result.data, backlink: backlink.data });
+  } catch (error: any) {
+    logger.error("Error in /project/:id route:", { error: error.message });
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+})
+
+app.get("/project/regenerate/:id", async (req, res) => {
+  try {
+    logger.info("Received request to /project/regenerate/:id", { params: req.params });
+    const { id } = req.params;
+    const result = await supabase.from("project").select("*").eq("id", id).single();
+    if (result.data == null) {
+      return res.status(404).json({ error: "Project not found" });
+    }
+    const backlink = await supabase.from("backlink").select("*").eq("id", result.data.id).single();
+    if (backlink.data === null) {
+      return res.status(404).json({ error: "Backlink not found" });
+    }
+    for (let index = 0; index < backlink.data.dr_0_30; index++) {
+      queue.add("createBacklink", { ...backlink.data });
+    }
+    for (let index = 0; index < backlink.data.dr_30_60; index++) {
+      queue.add("createBacklink", { ...backlink.data });
+    }
+    for (let index = 0; index < backlink.data.dr_60_100; index++) {
+      queue.add("createBacklink", { ...backlink.data });
+    }
+    if (result.error) {
+      logger.error("Error in /project/:id route:", { error: `error ${result ?? ""}` });
+      return res.status(500).json({ error: "Internal Server Error" });
+    }
+    return res.status(200).json({ message: 'Project regenerated successfully', data: result.data });
   } catch (error: any) {
     logger.error("Error in /project/:id route:", { error: error.message });
     return res.status(500).json({ error: "Internal Server Error" });
@@ -135,46 +175,17 @@ app.delete('/keys', async (req, res) => {
   }
 });
 
-app.get("/info/max-blogs/:tokens", async (req, res) => {
+app.post("/info/cal", async (req, res) => {
   try {
-    logger.info("Received request to /info/max-blogs/:tokens", { params: req.params });
-    const { tokens } = req.params;
-    const tokensRemaining = parseInt(tokens, 10);
-    if (isNaN(tokensRemaining)) {
-      return res.status(400).json({ error: "Invalid tokens value" });
-    }
-    const maxBlogs = keyManager.calculateMaxBlogs(tokensRemaining, 500); // Assuming 500 tokens per blog
-    return res.status(200).json({ message: 'Max blogs calculation successful', maxBlogs });
+    logger.info("Received request to /info/cal", req.body.value);
+    console.log(req.body);
+    
+    const value = await keyManager.calculateBlogs(parseInt(req.body.value));
+    console.log(value);
+    
+    return res.status(200).json({ message: 'Token usage per day retrieved successfully', value });
   } catch (error: any) {
-    logger.error("Error in /info/max-blogs/:tokens route:", { error: error.message });
-    return res.status(500).json({ error: "Internal Server Error" });
-  }
-});
-
-app.get("/info/days-to-exhaust/:tokens", async (req, res) => {
-  try {
-    logger.info("Received request to /info/days-to-exhaust/:tokens", { params: req.params });
-    const { tokens } = req.params;
-    const tokensRemaining = parseInt(tokens, 10);
-    if (isNaN(tokensRemaining)) {
-      return res.status(400).json({ error: "Invalid tokens value" });
-    }
-    const tokensPerDay = await contentGenerator.calculateTokenUsagePerDay();
-    const daysToExhaust = keyManager.calculateDaysToExhaustTokens(tokensRemaining, tokensPerDay);
-    return res.status(200).json({ message: 'Days to exhaust calculation successful', daysToExhaust });
-  } catch (error: any) {
-    logger.error("Error in /info/days-to-exhaust/:tokens route:", { error: error.message });
-    return res.status(500).json({ error: "Internal Server Error" });
-  }
-});
-
-app.get("/info/token-usage-daily", async (req, res) => {
-  try {
-    logger.info("Received request to /info/token-usage-daily");
-    const tokenUsagePerDay = await contentGenerator.calculateTokenUsagePerDay();
-    return res.status(200).json({ message: 'Token usage per day retrieved successfully', tokenUsagePerDay });
-  } catch (error: any) {
-    logger.error("Error in /info/token-usage-daily route:", { error: error.message });
+    logger.error("Error in /info/cal route:", { error: error.message });
     return res.status(500).json({ error: "Internal Server Error" });
   }
 });

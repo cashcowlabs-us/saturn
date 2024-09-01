@@ -1,7 +1,7 @@
 "use client";
 
+import { useMaxBlogs } from "@/app/systemApiInfo";
 import React, { useEffect, useState } from "react";
-import { useApiInfo } from "../app/systemApiInfo";
 import { FaCalendarAlt, FaBlog, FaRegClock, FaExclamationTriangle, FaSpinner } from "react-icons/fa"; // Importing icons
 
 const useDebounce = (value: number, delay: number) => {
@@ -24,7 +24,8 @@ const InfoSection: React.FC = () => {
   const [tokens, setTokens] = useState<number>(0);
   const debouncedTokens = useDebounce(tokens, 2000); // 2000 ms = 2 seconds
 
-  const { maxBlogs, daysToExhaust, tokenUsageDaily, isLoading, isError, error } = useApiInfo(debouncedTokens);
+  const { maxBlogs, isLoading, isError, error } = useMaxBlogs(debouncedTokens);
+  
 
   const handleTokenChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(e.target.value, 10);
@@ -61,20 +62,6 @@ const InfoSection: React.FC = () => {
             <div>
               <h3 className="text-lg font-semibold">Max Blogs</h3>
               <p>{maxBlogs !== undefined ? maxBlogs : "N/A"}</p>
-            </div>
-          </div>
-          <div className="flex items-center space-x-2">
-            <FaCalendarAlt className="text-xl" />
-            <div>
-              <h3 className="text-lg font-semibold">Days to Exhaust Tokens</h3>
-              <p>{daysToExhaust !== undefined ? daysToExhaust : "N/A"}</p>
-            </div>
-          </div>
-          <div className="flex items-center space-x-2">
-            <FaRegClock className="text-xl" />
-            <div>
-              <h3 className="text-lg font-semibold">Token Usage Per Day</h3>
-              <p>{tokenUsageDaily !== undefined ? tokenUsageDaily : "N/A"}</p>
             </div>
           </div>
         </div>
