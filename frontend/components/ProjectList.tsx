@@ -24,7 +24,7 @@ interface ProjectListProps {
 
 const ProjectList: React.FC<ProjectListProps> = ({ projects, isLoading, isError }) => {
   return (
-    <ScrollArea className="h-[50vh] lg:h-[calc(100vh-200px)]">
+    <ScrollArea className="h-[40vh] lg:h-[calc(100vh-200px)]">
       {isLoading ? (
         <div className="space-y-4">
           {[...Array(5)].map((_, index) => (

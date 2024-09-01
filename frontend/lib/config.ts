@@ -1,5 +1,5 @@
 const config = {
-    backendUrl: "http://localhost:4000" ?? "https://saturn-15hp.onrender.com",
+    backendUrl: process.env["NEXT_PUBLIC_BACKEND_URL"],
 }
 
 export default config
