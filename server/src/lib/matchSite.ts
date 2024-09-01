@@ -9,7 +9,8 @@ export default async function matchSite(
   secondaryKeywords: string[],
   industry: string,
   drHigh: number,
-  drLow: number
+  drLow: number,
+  project_uuid: string
 ): Promise<Output[] | Error> {
   // Ensure DR values are within valid range (0-100)
   drHigh = Math.min(100, Math.max(drHigh, 0));
@@ -25,7 +26,8 @@ export default async function matchSite(
     .from("sites")
     .select("*")
     .gt("dr", drLow)
-    .lt("dr", drHigh);
+    .lt("dr", drHigh)
+    .eq("project_uuid", project_uuid);
   
     // Handle error case
   if (error) {

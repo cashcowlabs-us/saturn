@@ -158,6 +158,7 @@ export type Database = {
           id: string
           industry: string
           password: string
+          project_uuid: string
           url: string
           username: string
         }
@@ -166,6 +167,7 @@ export type Database = {
           id?: string
           industry: string
           password: string
+          project_uuid: string
           url: string
           username: string
         }
@@ -174,10 +176,19 @@ export type Database = {
           id?: string
           industry?: string
           password?: string
+          project_uuid?: string
           url?: string
           username?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "sites_project_uuid_fkey"
+            columns: ["project_uuid"]
+            isOneToOne: false
+            referencedRelation: "project"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

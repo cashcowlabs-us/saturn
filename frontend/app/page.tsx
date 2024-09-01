@@ -7,16 +7,11 @@ import { FiList, FiSettings, FiUpload, FiX } from "react-icons/fi";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import InfoSection from "@/components/SystemInfo"
 import ProjectList from "@/components/ProjectList";
-import FileUploadSection, { CSVRow, WebsiteRow } from "@/components/FileUploadSection";
+import FileUploadSection from "@/components/FileUploadSection";
 import ApiKeySection from "@/components/ApiKeySection";
 import config from "@/lib/config";
 
 export default function Home() {
-  const [csvData, setCsvData] = useState<CSVRow[]>([]);
-  const [websiteData, setWebsiteData] = useState<WebsiteRow[]>([]);
-  const [name, setName] = useState<string>("");
-  const [showInfo, setShowInfo] = useState(true);
-
   const { data: projects, isLoading, isError, refetch } = useQuery({
     queryKey: ['projects'],
     queryFn: async () => {
@@ -54,12 +49,6 @@ export default function Home() {
             </CardHeader>
             <CardContent>
               <FileUploadSection
-                setCsvData={setCsvData}
-                setWebsiteData={setWebsiteData}
-                csvData={csvData}
-                websiteData={websiteData}
-                name={name}
-                setName={setName}
                 refetch={refetch}
               />
             </CardContent>

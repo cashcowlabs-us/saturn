@@ -5,11 +5,18 @@ const Output = z.object({
     token: z.number(),
     data: z.array(z.object({
         backlink: z.string().url(),
-        primary_keyword: z.string().url(),
-        seconday_keyword: z.string().url(),
+        primary_keyword: z.string(),
+        seconday_keyword: z.string(),
         dr_0_30: z.string(),
         dr_30_60: z.string(),
         dr_60_100: z.string(),
+        industry: z.string(),
+    })).min(1),
+    website: z.array(z.object({
+        url: z.string().url(),
+        password: z.string(),
+        username: z.string(),
+        dr: z.number(),
         industry: z.string(),
     })).min(1)
 })

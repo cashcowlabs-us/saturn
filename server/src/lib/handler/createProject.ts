@@ -1,3 +1,4 @@
+import logger from "../../utils/log";
 import { queue } from "../../utils/queue";
 import supabase from "../../utils/supabase";
 import csvInputValidation from "../csvFileValidation";
@@ -9,6 +10,7 @@ export default async function createProjectHandler(req: Request, res: Response) 
         // Validate input
         const result = csvInputValidation(req.body);
         if (result instanceof Error) {
+            logger.error("Error in createProjectHandler:", { error: result.message });
             return res.status(400).json({ error: result.message });
         }
 
@@ -28,13 +30,22 @@ export default async function createProjectHandler(req: Request, res: Response) 
                 token: result.token,
                 id: newProjectData.uuid,
             });
+        const interDbWebsite = result.website.map(e => {
+            return { project_uuid: newProjectData.uuid, ...e, dr: Math.floor(e.dr) };
+        })
+        const {error: websiteError} =await supabase.from("sites").insert(interDbWebsite);
+
+        if(websiteError) {
+            console.error("ERR001: YESSSS Error creating project:", websiteError);
+            return res.status(500).json({ error: "Failed to create project" });
+        }
         
         for(const backlink of result.data) {
             queue.add("createBacklink", { project_uuid: newProjectData.uuid, ...backlink });
         }
 
         if (newProjectError) {
-            console.error("ERR001: Error creating project:", newProjectError);
+            console.error("ERR002: Error creating project:", newProjectError);
             return res.status(500).json({ error: "Failed to create project" });
         }
 

@@ -1,7 +1,6 @@
 import express from "express";
 import config from "../utils/config";
 import createProjectHandler from "../lib/handler/createProject";
-import { createAddWebstePostHandler } from "../lib/handler/createAddWebsteHandler";
 import { z } from "zod";
 import { keyManager } from "../lib/openapikeyManager";
 import cors from "cors";
@@ -21,7 +20,7 @@ const apiKeySchema = z.object({
 
 app.post("/projects", async (req, res) => {
   try {
-    logger.info("Received request to /project", { requestBody: req.body });
+    logger.info("Received request to /project");
     await createProjectHandler(req, res);
     logger.info("Successfully handled /project request");
   } catch (error: any) {
@@ -115,17 +114,6 @@ app.get("/projects", async (req, res) => {
     return res.status(500).json({ error: "Internal Server Error" });
   }
 })
-
-app.post("/website", async (req, res) => {
-  try {
-    logger.info("Received request to /website", { requestBody: req.body });
-    await createAddWebstePostHandler(req, res);
-    logger.info("Successfully handled /website request");
-  } catch (error: any) {
-    logger.error("Error in /website route:", { error: error.message });
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-});
 
 app.post('/keys', async (req, res) => {
   try {
