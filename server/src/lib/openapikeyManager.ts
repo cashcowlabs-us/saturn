@@ -255,7 +255,8 @@ export function createKeyManager(supabase: SupabaseClient<Database>) {
         removeKey,
         executeRequest,
         refreshKeys,
-        calculateBlogs
+        calculateBlogs,
+        getNextAvailableTime
     };
 }
 

@@ -5,6 +5,7 @@ import createProjectBacklinks from "../lib/createProjectBacklink";
 import createProjectBacklinksBlogs from "../lib/createProjectBacklinksBlogs";
 import logger from "../utils/log";
 import express from "express"
+import { keyManager } from "../lib/openapikeyManager";
 
 new Worker(queue.name, async (job) => {
     switch (job.name) {
@@ -16,9 +17,14 @@ new Worker(queue.name, async (job) => {
             break;
         }
         case "createBacklinkBlog": {
-            const res = await createProjectBacklinksBlogs(job.data);
+            let res : Error| null = null
+            const skipTime = await keyManager.getNextAvailableTime()
+            if(await  skipTime < new Date()) {
+                res = await createProjectBacklinksBlogs(job.data);
+            }
             if(res instanceof Error) {
-                logger.error("createProjectBacklinksBlogs ",res);
+                job.moveToDelayed(skipTime.getTime())
+                logger.error(`createProjectBacklinksBlogs skipping till ${skipTime.toLocaleDateString()}`,res);
             }
             break;
         }
