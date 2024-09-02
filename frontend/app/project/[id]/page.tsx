@@ -11,6 +11,7 @@ import config from "@/lib/config";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiRefreshCw, FiCalendar, FiArrowRight, FiBox } from "react-icons/fi";
 import { RiRocketLine, RiLightbulbFlashLine, RiSearchEyeLine, RiBarChartBoxLine, RiTrophyLine, RiToolsLine, RiLineChartLine, RiFlag2Line } from "react-icons/ri";
+import { FaRegCopy } from "react-icons/fa6";
 
 const projectIcons = [
   RiRocketLine,
@@ -48,6 +49,12 @@ const ProjectSkeleton = () => (
     </CardFooter>
   </Card>
 );
+
+const copyToClipboard = (text: string) => {
+  navigator.clipboard.writeText(text).then(() => {
+  }).catch(err => {
+  });
+};
 
 export default function Page() {
   const params = useParams();
@@ -231,20 +238,49 @@ export default function Page() {
                       <h2 className="text-xl font-semibold flex items-center">
                         <Icon className="mr-2 w-6 h-6" />
                         {blog.title}
+                        <div>
+                        <Button
+                          onClick={() => copyToClipboard(blog.meta_title)}
+                          variant="outline"
+                          className="text-black text-xl"
+                        >
+                          <FaRegCopy />
+                        </Button>
+                      </div>
                       </h2>
+                      <h3 className="flex flex-col text-xl items-center gap-2">
+                        <div className="text-nowrap flex w-full">meta title</div>
+                        <div className="text-gray-800/[0.5]">{blog.meta_title}
+                          <Button
+                            onClick={() => copyToClipboard(blog.meta_title)}
+                            variant="outline"
+                            className="text-black text-xl"
+                          >
+                            <FaRegCopy />
+                          </Button>
+                        </div>
+                        <div className="text-nowrap flex w-full">meta description</div>
+                        <div className="text-gray-800/[0.5]">{blog.meta_description}
+                          <Button
+                            onClick={() => copyToClipboard(blog.meta_description)}
+                            variant="outline"
+                            className="text-black text-xl"
+                          >
+                            <FaRegCopy />
+                          </Button>
+                        </div>
+                      </h3>
                     </CardHeader>
                     <CardContent className="pt-4">
                       <p className="text-gray-700">{blog.content}</p>
-                    </CardContent>
-                    <CardFooter className="bg-gray-100 flex justify-between items-center">
-                      <p className="text-sm text-gray-600 flex items-center">
-                        <FiCalendar className="mr-1" />
-                        {new Date(blog.created_at).toLocaleDateString()}
-                      </p>
-                      <Button variant="ghost" size="sm" className="text-black hover:text-gray-800">
-                        Details <FiArrowRight className="ml-1" />
+                      <Button
+                        onClick={() => copyToClipboard(blog.content)}
+                        variant="outline"
+                        className="text-black text-xl"
+                      >
+                        <FaRegCopy />
                       </Button>
-                    </CardFooter>
+                    </CardContent>
                   </Card>
                 </motion.div>
               );

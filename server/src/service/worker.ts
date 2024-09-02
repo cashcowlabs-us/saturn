@@ -4,30 +4,48 @@ import { queue } from "../utils/queue";
 import createProjectBacklinks from "../lib/createProjectBacklink";
 import createProjectBacklinksBlogs from "../lib/createProjectBacklinksBlogs";
 import logger from "../utils/log";
-import express from "express"
+import express from "express";
 import { keyManager } from "../lib/openapikeyManager";
 
 new Worker(queue.name, async (job) => {
-    switch (job.name) {
-        case "createBacklink": {
-            const res = await createProjectBacklinks(job.data);
-            if(res instanceof Error) {
-                logger.error("createProjectBacklinks ",res);
+    logger.info(`Processing job ${job.id} of type ${job.name}`);
+    
+    try {
+        switch (job.name) {
+            case "createBacklink": {
+                logger.info(`Job ${job.id}: Starting createBacklink`);
+                const res = await createProjectBacklinks(job.data);
+                if (res instanceof Error) {
+                    logger.error(`Job ${job.id}: Error in createProjectBacklinks`, res);
+                } else {
+                    logger.info(`Job ${job.id}: Successfully completed createBacklink`);
+                }
+                break;
             }
-            break;
+            case "createBacklinkBlog": {
+                logger.info(`Job ${job.id}: Starting createBacklinkBlog`);
+                const skipTime = await keyManager.getNextAvailableTime();
+                logger.info(`Job ${job.id}: Next available time is ${skipTime.toLocaleDateString()}`);
+
+                if (skipTime.getTime() < Date.now()) {
+                    const res = await createProjectBacklinksBlogs(job.data);
+                    if (res instanceof Error) {
+                        logger.error(`Job ${job.id}: Error in createProjectBacklinksBlogs`, res);
+                    } else {
+                        logger.info(`Job ${job.id}: Successfully completed createBacklinkBlog`);
+                    }
+                } else {
+                    logger.info(`Job ${job.id}: Skipping execution, waiting until ${skipTime.toLocaleDateString()}`);
+                    job.moveToDelayed(skipTime.getTime());
+                }
+                break;
+            }
+            default: {
+                logger.warn(`Job ${job.id}: Unknown job type ${job.name}`);
+            }
         }
-        case "createBacklinkBlog": {
-            let res : Error| null = null
-            const skipTime = await keyManager.getNextAvailableTime()
-            if(await  skipTime < new Date()) {
-                res = await createProjectBacklinksBlogs(job.data);
-            }
-            if(res instanceof Error) {
-                job.moveToDelayed(skipTime.getTime())
-                logger.error(`createProjectBacklinksBlogs skipping till ${skipTime.toLocaleDateString()}`,res);
-            }
-            break;
-        }
+    } catch (err) {
+        logger.error(`Job ${job.id}: Unexpected error`, err);
     }
 }, {
     connection: redis,
@@ -35,7 +53,9 @@ new Worker(queue.name, async (job) => {
         count: 3
     },
     concurrency: 10
-})
+});
 
-const app  = express()
-app.listen(8000, () => {})
+const app = express();
+app.listen(8000, () => {
+    logger.info("Server is running on port 8000");
+});

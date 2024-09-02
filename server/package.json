@@ -5,6 +5,7 @@
   "scripts": {
     "service:main": "tsc && node dist/service/api.js",
     "service:worker": "tsc && node dist/service/worker.js",
+    "demo": "tsc && node dist/service/test.js",
     "fetch:type": "pnpx supabase gen types --lang=typescript --project-id \"rutnybcdiickiyjpidbf\" --schema public > ./src/database.types.ts",
     "test": "jest --detectOpenHandles"
   },

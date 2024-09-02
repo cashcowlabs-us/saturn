@@ -92,6 +92,8 @@ export type Database = {
           content: string
           created_at: string | null
           id: string
+          meta_description: string
+          meta_title: string
           project_uuid: string
           title: string
         }
@@ -100,6 +102,8 @@ export type Database = {
           content: string
           created_at?: string | null
           id?: string
+          meta_description: string
+          meta_title: string
           project_uuid: string
           title: string
         }
@@ -108,6 +112,8 @@ export type Database = {
           content?: string
           created_at?: string | null
           id?: string
+          meta_description?: string
+          meta_title?: string
           project_uuid?: string
           title?: string
         }

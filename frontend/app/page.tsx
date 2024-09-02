@@ -5,12 +5,10 @@ import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { FiList, FiSettings, FiUpload, FiX } from "react-icons/fi";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import InfoSection from "@/components/SystemInfo"
 import ProjectList from "@/components/ProjectList";
 import FileUploadSection from "@/components/FileUploadSection";
 import ApiKeySection from "@/components/ApiKeySection";
 import config from "@/lib/config";
-import { Input } from "@/components/ui/input";
 
 export default function Home() {
   const { data: projects, isLoading, isError, refetch } = useQuery({
@@ -64,23 +62,6 @@ export default function Home() {
               </CardHeader>
               <CardContent>
                 <ApiKeySection />
-              </CardContent>
-            </Card>
-            <Card className="w-full"> 
-              <CardHeader>
-                <CardTitle className="text-xl lg:text-2xl font-bold flex items-center">
-                  <FiSettings className="mr-2" /> Backend URL
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-col w-full h-full">
-                  <div className="text-gray-500">URL</div>
-                  <Input placeholder={config.backendUrl} onChange={(e) => {
-                    config.backendUrl = e.target.value
-                    console.log(config.backendUrl);
-                    
-                  }}/>
-                </div>
               </CardContent>
             </Card>
           </div>

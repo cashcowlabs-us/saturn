@@ -34,7 +34,6 @@ export function createKeyManager(supabase: SupabaseClient<Database>) {
         return totalBlogs;
     }
 
-
     async function addKey(key: string): Promise<void> {
         console.log(`Adding key: ${key}`);
 
@@ -59,8 +58,6 @@ export function createKeyManager(supabase: SupabaseClient<Database>) {
 
         if (error instanceof Error) throw error;
     }
-
-
 
     async function testKey(key: string): Promise<OpenAIKey | Error> {
         try {
@@ -99,6 +96,7 @@ export function createKeyManager(supabase: SupabaseClient<Database>) {
             return new Error("Unexpected error occurred during key test.");
         }
     }
+
     async function refreshKeys(): Promise<void> {
         const { data: keys, error } = await supabase
             .from('api_keys')
@@ -129,7 +127,6 @@ export function createKeyManager(supabase: SupabaseClient<Database>) {
             }
         }
     }
-
 
     async function removeKey(key: string): Promise<void> {
         const { error } = await supabase
@@ -248,8 +245,6 @@ export function createKeyManager(supabase: SupabaseClient<Database>) {
         }, new Date(Date.now() + 3600000));
     }
 
-
-
     return {
         addKey,
         removeKey,
@@ -261,46 +256,38 @@ export function createKeyManager(supabase: SupabaseClient<Database>) {
 }
 
 export function createContentGenerator(keyManager: ReturnType<typeof createKeyManager>) {
-    async function generateContent(prompt: string): Promise<string | Error> {
-        try {
-            const response = await keyManager.executeRequest(async (key) => {
-                const response = await fetch('https://api.openai.com/v1/chat/completions', {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${key}`,
-                        'Content-Type': 'application/json'
+    async function generateContent(prompt: string, schema: object, token: number): Promise<any> {
+
+        const requestFn = async (apiKey: string) => {
+            const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${apiKey}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    model: "gpt-4o-mini",
+                    messages: [{ role: "user", content: prompt }],
+                    response_format: {
+                        "type": "json_schema",
+                        "json_schema": {...schema},
                     },
-                    body: JSON.stringify({
-                        model: "gpt-4o-mini",
-                        messages: [{ role: "user", content: prompt }],
-                        max_tokens: 500
-                    })
-                });
-
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return response;
+                })
             });
-            if (response instanceof Error) {
-                return response;
-            }
 
-            return response.choices[0].message.content.trim();
-        } catch (error) {
-            if (error instanceof Error) {
-                console.error('Error during content generation:', error.message);
-                return new Error(`Content generation failed: ${error.message}`);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
             }
-            console.error('Unexpected error during content generation:', error);
-            return new Error("Unexpected error occurred during content generation.");
-        }
+            return response;
+        };
+
+        return keyManager.executeRequest(requestFn);
     }
 
-    return {
-        generateContent,
-    };
+    return { generateContent };
 }
 
-export const keyManager = createKeyManager(supabase);
-export const contentGenerator = createContentGenerator(keyManager);
+const keyManager = createKeyManager(supabase)
+const contentGenerator = createContentGenerator(keyManager);
+
+export { keyManager, contentGenerator };

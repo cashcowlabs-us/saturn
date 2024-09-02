@@ -24,24 +24,40 @@ export default async function matchSite(
   // Fetch sites based on DR range
   const { data: sites, error } = await supabase
     .from("sites")
-    .select("*")
+    .select("id, industry") // Select only the necessary fields
     .gt("dr", drLow)
     .lt("dr", drHigh)
     .eq("project_uuid", project_uuid);
-  
-    // Handle error case
+
+  // Handle error case
   if (error) {
-    return Error(error.message);
+    return new Error(error.message);
   }
 
   // Filter sites based on keywords and industry
-  const matchedSites = sites.filter((site) => {
+  let matchedSites = sites.filter((site) => {
     return (
       site.industry === primaryKeyword ||
       secondaryKeywords.includes(site.industry) ||
       site.industry === industry
     );
   });
+
+  // If no matched sites are found, fetch random sites
+  if (matchedSites.length === 0) {
+    const { data: randomSites, error: randomError } = await supabase
+      .from("sites")
+      .select("id") // Fetch only the id field for random sites
+      .eq("project_uuid", project_uuid)
+      .order("dr", { ascending: false })
+      .limit(5); // Limit the number of random sites returned
+
+    if (randomError) {
+      return new Error(randomError.message);
+    }
+
+    matchedSites = randomSites as typeof sites; // Type assertion to match expected type
+  }
 
   // Return an array of matched site UUIDs
   return matchedSites.map(({ id }) => ({ site_uuid: id }));
