@@ -193,7 +193,7 @@ const FileUploadSection: React.FC<FileUploadSectionProps> = ({ refetch }) => {
         <div className="space-y-2">
           <Label htmlFor="website-csv">Website CSV</Label>
           <AlertComponent show={showAlerts.websiteCsv} setShow={(show) => setShowAlerts(prev => ({ ...prev, websiteCsv: show }))}>
-            <div>Upload a CSV file containing website data. For reference, weve provided a sample Excel file <a className="text-blue-500 hover:underline" href="https://docs.google.com/spreadsheets/d/1r-Ce5F2pA4G-6R7u-_hQJUbyOfCzCcBQsJfQo_jgww8/edit?gid=362884328#gid=362884328">here</a>.</div>
+            <div>Upload a CSV file containing website data. For reference, weve provided a sample Excel file <a className="text-blue-500 hover:underline" href="https://docs.google.com/spreadsheets/d/1r-Ce5F2pA4G-6R7u-_hQJUbyOfCzCcBQsJfQo_jgww8/edit?gid=0#gid=0">here</a>.</div>
           </AlertComponent>
           <Input id="website-csv" type="file" accept=".csv" onChange={handleWebsiteFileUpload} />
           {websiteFileName && (
