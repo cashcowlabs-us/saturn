@@ -77,7 +77,7 @@ const ApiKeyInfo: React.FC = () => {
           onClick={handleCalibrate}
           className="mb-4 px-4 py-2 bg-black text-white rounded"
         >
-          {mutation.isPending ? "Calibrating..." : "Calibrate API"}
+          {mutation.isPending ? "Refreshing..." : "Refresh Keys"}
         </button>
       </div>
       {calibrationStatus && (

@@ -9,10 +9,11 @@ import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import ApiKeyInfo from "./ApiKeyInfo";
 import config from "@/lib/config";
+import AlertComponent from "./AlertComponent";
 
 const submitApiKey = async (apiKey: string) => {
   console.log("Submitting API key:", apiKey);
-  
+
   const response = await fetch(config.backendUrl + '/keys', {
     method: 'POST',
     headers: {
@@ -44,6 +45,10 @@ const ApiKeySection: React.FC = () => {
 
   return (
     <div className="space-y-4 mt-8">
+      <AlertComponent setShow={() => true} show={true}>
+      This is your API key section. We utilize multiple API keys from *different accounts*, which is beneficial for increasing the speed of blog generation.
+      The *refresh button* will help you get latest infomtion like *rate limit* and *tokens remaining*. 
+      </AlertComponent>
       <div>
         <ApiKeyInfo />
         <Label htmlFor="api-key">Add Key</Label>
