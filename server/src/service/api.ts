@@ -68,37 +68,37 @@ app.get("/project/:id", async (req, res) => {
   }
 })
 
-app.get("/project/regenerate/:id", async (req, res) => {
-  try {
-    logger.info("Received request to /project/regenerate/:id", { params: req.params });
-    const { id } = req.params;
-    const result = await supabase.from("project").select("*").eq("id", id).single();
-    if (result.data == null) {
-      return res.status(404).json({ error: "Project not found" });
-    }
-    const backlink = await supabase.from("backlink").select("*").eq("id", result.data.id).single();
-    if (backlink.data === null) {
-      return res.status(404).json({ error: "Backlink not found" });
-    }
-    for (let index = 0; index < backlink.data.dr_0_30; index++) {
-      queue.add("createBacklink", { ...backlink.data });
-    }
-    for (let index = 0; index < backlink.data.dr_30_60; index++) {
-      queue.add("createBacklink", { ...backlink.data });
-    }
-    for (let index = 0; index < backlink.data.dr_60_100; index++) {
-      queue.add("createBacklink", { ...backlink.data });
-    }
-    if (result.error) {
-      logger.error("Error in /project/:id route:", { error: `error ${result ?? ""}` });
-      return res.status(500).json({ error: "Internal Server Error" });
-    }
-    return res.status(200).json({ message: 'Project regenerated successfully', data: result.data });
-  } catch (error: any) {
-    logger.error("Error in /project/:id route:", { error: error.message });
-    return res.status(500).json({ error: "Internal Server Error" });
-  }
-})
+// app.get("/project/regenerate/:id", async (req, res) => {
+//   try {
+//     logger.info("Received request to /project/regenerate/:id", { params: req.params });
+//     const { id } = req.params;
+//     const result = await supabase.from("project").select("*").eq("id", id).single();
+//     if (result.data == null) {
+//       return res.status(404).json({ error: "Project not found" });
+//     }
+//     const backlink = await supabase.from("backlink").select("*").eq("id", result.data.id).single();
+//     if (backlink.data === null) {
+//       return res.status(404).json({ error: "Backlink not found" });
+//     }
+//     for (let index = 0; index < backlink.data.dr_0_30; index++) {
+//       queue.add("createBacklink", { ...backlink.data });
+//     }
+//     for (let index = 0; index < backlink.data.dr_30_60; index++) {
+//       queue.add("createBacklink", { ...backlink.data });
+//     }
+//     for (let index = 0; index < backlink.data.dr_60_100; index++) {
+//       queue.add("createBacklink", { ...backlink.data });
+//     }
+//     if (result.error) {
+//       logger.error("Error in /project/:id route:", { error: `error ${result ?? ""}` });
+//       return res.status(500).json({ error: "Internal Server Error" });
+//     }
+//     return res.status(200).json({ message: 'Project regenerated successfully', data: result.data });
+//   } catch (error: any) {
+//     logger.error("Error in /project/:id route:", { error: error.message });
+//     return res.status(500).json({ error: "Internal Server Error" });
+//   }
+// })
 
 app.get("/projects", async (req, res) => {
   try {

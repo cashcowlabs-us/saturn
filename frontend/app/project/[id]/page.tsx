@@ -12,6 +12,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { FiRefreshCw, FiCalendar, FiArrowRight, FiBox } from "react-icons/fi";
 import { RiRocketLine, RiLightbulbFlashLine, RiSearchEyeLine, RiBarChartBoxLine, RiTrophyLine, RiToolsLine, RiLineChartLine, RiFlag2Line } from "react-icons/ri";
 import { FaRegCopy } from "react-icons/fa6";
+import ProtectedPage from "@/components/ProtectedPage";
 
 const projectIcons = [
   RiRocketLine,
@@ -144,88 +145,82 @@ export default function Page() {
 
   const totalDr = totalDr0_30 + totalDr30_60 + totalDr60_100;
 
-
-
   return (
-    <div className="container mx-auto p-4 bg-white min-h-screen">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-800 flex items-center">
-          <FiBox className="mr-2" />
-          {project.name || `Project ${params.id}`}
-        </h1>
-        <Button onClick={handleRegenerate} variant="outline" className="text-black border-black hover:bg-gray-200">
-          Regenerate Project
-        </Button>
-      </div>
-
-      <motion.div
-        className="bg-white rounded-lg p-6 mb-8"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <Alert>
-          <AlertDescription>
-            We spread out the generation time to maximize the possible generating scenarios. New content may appear periodically.
-          </AlertDescription>
-        </Alert>
-        <div className="mt-4 flex flex-col lg:flex-row lg:space-x-8">
-          <div className="flex items-center mb-4 lg:mb-0">
-            <FiCalendar className="text-xl mr-2 text-gray-600" />
-            <span className="font-semibold text-gray-800">
-              Created At: {new Date(project.createdat).toLocaleDateString()}
-            </span>
-          </div>
-          <div className="flex items-center mb-4 lg:mb-0">
-            <FiBox className="text-xl mr-2 text-gray-600" />
-            <span className="font-semibold text-gray-800">
-              Project ID: {project.id}
-            </span>
-          </div>
-          <div className="flex items-center mb-4 lg:mb-0">
-            <FiBox className="text-xl mr-2 text-gray-600" />
-            <span className="font-semibold text-gray-800">
-              Total Blogs: {blogs.data?.length || 0}
-            </span>
-          </div>
-          <div className="flex items-center mb-4 lg:mb-0">
-            <FiBox className="text-xl mr-2 text-gray-600" />
-            <span className="font-semibold text-gray-800">
-              Target Total: {totalDr || 0}
-            </span>
-          </div>
+    <ProtectedPage>
+      <div className="container mx-auto p-4 bg-white min-h-screen">
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-800 flex items-center">
+            <FiBox className="mr-2" />
+            {project.name || `Project ${params.id}`}
+          </h1>
         </div>
-      </motion.div>
 
-      <AnimatePresence>
         <motion.div
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5, staggerChildren: 0.1 }}
+          className="bg-white rounded-lg p-6 mb-8"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
         >
-          {blogs.isLoading ? (
-            Array.from({ length: 6 }).map((_, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.3 }}
-              >
-                <ProjectSkeleton />
-              </motion.div>
-            ))
-          ) : blogs.error ? (
-            <div className="col-span-full">
-              <Alert variant="destructive">
-                <AlertDescription>Error: {blogs.error.message}</AlertDescription>
-              </Alert>
+          <Alert>
+            <AlertDescription>
+              We spread out the generation time to maximize the possible generating scenarios. New content may appear periodically.
+            </AlertDescription>
+          </Alert>
+          <div className="mt-4 flex flex-col lg:flex-row lg:space-x-8">
+            <div className="flex items-center mb-4 lg:mb-0">
+              <FiCalendar className="text-xl mr-2 text-gray-600" />
+              <span className="font-semibold text-gray-800">
+                Created At: {new Date(project.createdat).toLocaleDateString()}
+              </span>
             </div>
-          ) : (
-            blogs.data?.map((blog: any, index: number) => {
-              const Icon = projectIcons[index % projectIcons.length];
-              return (
+            <div className="flex items-center mb-4 lg:mb-0">
+              <FiBox className="text-xl mr-2 text-gray-600" />
+              <span className="font-semibold text-gray-800">
+                Project ID: {project.id}
+              </span>
+            </div>
+            <div className="flex items-center mb-4 lg:mb-0">
+              <FiBox className="text-xl mr-2 text-gray-600" />
+              <span className="font-semibold text-gray-800">
+                Total Blogs: {blogs.data?.length || 0}
+              </span>
+            </div>
+            <div className="flex items-center mb-4 lg:mb-0">
+              <FiBox className="text-xl mr-2 text-gray-600" />
+              <span className="font-semibold text-gray-800">
+                Target Total: {totalDr || 0}
+              </span>
+            </div>
+          </div>
+        </motion.div>
+
+        <AnimatePresence>
+          <motion.div
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5, staggerChildren: 0.1 }}
+          >
+            {blogs.isLoading ? (
+              Array.from({ length: 6 }).map((_, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <ProjectSkeleton />
+                </motion.div>
+              ))
+            ) : blogs.error ? (
+              <div className="col-span-full">
+                <Alert variant="destructive">
+                  <AlertDescription>Error fetching blogs: {blogs.error.message}</AlertDescription>
+                </Alert>
+              </div>
+            ) : (
+              blogs.data?.map((blog: any) => (
                 <motion.div
                   key={blog.id}
                   initial={{ opacity: 0, y: 20 }}
@@ -234,68 +229,45 @@ export default function Page() {
                   transition={{ duration: 0.3 }}
                 >
                   <Card className="overflow-hidden">
-                    <CardHeader className="bg-gray-200 text-black">
-                      <h2 className="text-xl font-semibold flex items-center">
-                        <Icon className="mr-2 w-6 h-6" />
-                        {blog.title}
-                        <div>
-                        <Button
-                          onClick={() => copyToClipboard(blog.meta_title)}
-                          variant="outline"
-                          className="text-black text-xl"
-                        >
-                          <FaRegCopy />
-                        </Button>
+                    <CardHeader>
+                      <div className="flex items-center space-x-2">
+                        <RiBarChartBoxLine className="w-6 h-6 text-gray-600" />
+                        <h2 className="text-xl font-bold text-gray-800">{blog.title}</h2>
                       </div>
-                      </h2>
-                      <h3 className="flex flex-col text-xl items-center gap-2">
-                        <div className="text-nowrap flex w-full">meta title</div>
-                        <div className="text-gray-800/[0.5]">{blog.meta_title}
-                          <Button
-                            onClick={() => copyToClipboard(blog.meta_title)}
-                            variant="outline"
-                            className="text-black text-xl"
-                          >
-                            <FaRegCopy />
-                          </Button>
-                        </div>
-                        <div className="text-nowrap flex w-full">meta description</div>
-                        <div className="text-gray-800/[0.5]">{blog.meta_description}
-                          <Button
-                            onClick={() => copyToClipboard(blog.meta_description)}
-                            variant="outline"
-                            className="text-black text-xl"
-                          >
-                            <FaRegCopy />
-                          </Button>
-                        </div>
-                      </h3>
                     </CardHeader>
-                    <CardContent className="pt-4">
-                      <p className="text-gray-700">{blog.content}</p>
-                      <Button
-                        onClick={() => copyToClipboard(blog.content)}
-                        variant="outline"
-                        className="text-black text-xl"
-                      >
-                        <FaRegCopy />
-                      </Button>
+                    <CardContent>
+                      <div className="flex items-center space-x-2 text-gray-600 mb-2">
+                        <FiCalendar className="w-5 h-5" />
+                        <span>{new Date(blog.createdat).toLocaleDateString()}</span>
+                      </div>
+                      <p className="text-gray-700">{blog.description}</p>
                     </CardContent>
+                    <CardFooter className="flex justify-between items-center">
+                      <Button onClick={() => copyToClipboard(blog.content)}>
+                        <FaRegCopy className="w-4 h-4 mr-2" /> Copy
+                      </Button>
+                      <Button onClick={() => window.open(blog.url, '_blank')}>
+                        <FiArrowRight className="w-4 h-4 mr-2" /> View
+                      </Button>
+                    </CardFooter>
                   </Card>
                 </motion.div>
-              );
-            })
-          )}
-        </motion.div>
-      </AnimatePresence>
+              ))
+            )}
+          </motion.div>
+        </AnimatePresence>
 
-      {isGenerating && <LoadingSpinner />}
+        {isGenerating && <LoadingSpinner />}
 
-      <div className="mt-8 flex space-x-4">
-        <Button onClick={handleRefresh} variant="outline" className="text-black border-black hover:bg-gray-200">
-          Refresh Data
-        </Button>
+        <div className="mt-8 flex justify-between">
+          <Button onClick={handleRefresh}>
+            <FiRefreshCw className="mr-2" /> Refresh
+          </Button>
+          <Button onClick={handleRegenerate}>
+            Regenerate Content
+          </Button>
+        </div>
       </div>
-    </div>
+    </ProtectedPage>
   );
 }

@@ -29,20 +29,34 @@ export default async function createProjectBacklinksBlogs(input: z.infer<typeof 
         // Call the createBlogPost function
         const previousBlog = await redis.get("previousBlog");
         const prompt = ` 
-Create a Blog [400-600 words], metaTitle [1 line title strictly], metaDescription [1-2 liners], that blends SEO best practices with a warm, engaging tone. 
------------------------------------------------------------------
-Here is a previous blog that we generated for you: ${previousBlog}
------------------------------------------------------------------
-Start by identifying common questions and concerns your target audience has from the keywords:
+        -------
+        here is a blog previously generated ${previousBlog}
+        ------
+Create a Blog [400-600 words], metaTitle [ 1 line title strictly] , 
+metaDescription [1-2 liners] and internally link with the backlink given, 
+it blends SEO best practices with a warm, engaging tone. Start by identifying 
+common questions and concerns your target audience has from the keywords
 
 Primary keyword: ${backlink.data.primary_keyword}
 
 Secondary keyword: ${backlink.data.seconday_keyword}
+Backlink: ${backlink.data.backlink} 
+make sure you use, proper anchor link to backlink the site.
 
-Use natural, everyday language to make your points, avoiding jargon unless it's widely understood by your readers. Incorporate relatable examples and personal stories to illustrate your advice, making the content feel like a conversation with a knowledgeable friend. Incorporate keywords smoothly into your text, ensuring they enhance rather than disrupt the flow. Use them in headings, subheadings, and throughout the body in a way that feels natural. Break down complex ideas with bullet points, numbered lists, and bold text to make the content easily scannable for readers and search engines alike. 
+ Use natural, everyday language to make your points, avoiding jargon unless it's 
+ widely understood by your readers. Incorporate relatable examples and personal 
+ stories to illustrate your advice, making the content feel like a conversation with a 
+ knowledgeable friend. Incorporate keywords smoothly into your text, ensuring they enhance
+  rather than disrupt the flow. Use them in headings, subheadings, and throughout the body in a
+   way that feels natural. Break down complex ideas with bullet points, numbered lists, and 
+   bold text to make the content easily scannable for readers and search engines alike. 
 
-Incorporate relevant keywords where appropriate. Encourage reader interaction by posing questions, inviting comments, and suggesting social shares. This not only boosts engagement but also signals to search engines that your content is valuable and engaging. Finally, keep your content up-to-date. Regular updates signal to search engines that your site is relevant, and it gives you the opportunity to refresh your SEO efforts and deepen your connection with readers.
-`;
+Incorporate relevant keywords where appropriate. Encourage reader interaction by posing 
+questions, inviting comments, and suggesting social shares. This not only boosts 
+engagement but also signals to search engines that your content is valuable and
+ engaging. Finally, keep your content up-to-date. Regular updates signal to search
+  engines that your site is relevant, and it gives you the opportunity to refresh
+   your SEO efforts and deepen your connection with readers`;
 
         const res = await contentGenerator.generateContent(prompt,
             {

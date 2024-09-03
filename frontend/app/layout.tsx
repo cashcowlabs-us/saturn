@@ -3,6 +3,7 @@
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { LoginProvider } from "./loginContext";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -15,7 +16,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <QueryClientProvider client={queryClient}>
-        <body className={inter.className}>{children}</body>
+        <LoginProvider>
+          <body className={inter.className}>{children}</body>
+        </ LoginProvider>
       </QueryClientProvider>
     </html>
   );
